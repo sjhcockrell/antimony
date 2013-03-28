@@ -13,21 +13,18 @@
 #
 
 
-font_otf="$1.otf"
-font_ttf="$1.ttf"
-font_eot="$1.eot"
-font_woff="$1.woff"
+name=`basename $1 .otf`
+font_ttf="$name.ttf"
+font_eot="$name.eot"
+font_woff="$name.woff"
 
 # Step 1: Generate TTF Version of OTF font.
-fontforge -c '
-    Open("'$font_otf'");
-    Generate("'$font_ttf'");
-    Quit(0);'
+fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.ttf');Quit(0);"
 
 # Step 2: Generate EOT Version from TTF
 ttf2eot $font_ttf > $font_eot;
 
 # Step 3: Generate WOFF Version from OTF
-sfnt2woff $font_otf > $font_woff;
+sfnt2woff $1 > $font_woff;
 
 # Done.
