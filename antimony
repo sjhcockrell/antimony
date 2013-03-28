@@ -12,19 +12,19 @@
 #  element added to lead type to create sharp edges.
 #
 
-
-name=`basename $1 .otf`
-font_ttf="$name.ttf"
-font_eot="$name.eot"
-font_woff="$name.woff"
+arg_path=`dirname $1`
+arg_name=`basename $1 .otf`
+font_ttf="$arg_name.ttf"
+font_eot="$arg_name.eot"
+font_woff="$arg_name.woff"
 
 # Step 1: Generate TTF Version of OTF font.
 fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.ttf');Quit(0);"
 
 # Step 2: Generate EOT Version from TTF
-ttf2eot $font_ttf > $font_eot;
+ttf2eot $arg_path/$font_ttf > $arg_path/$font_eot;
 
 # Step 3: Generate WOFF Version from OTF
-sfnt2woff $1 > $font_woff;
+sfnt2woff $1 > $arg_path/$font_woff;
 
 # Done.
