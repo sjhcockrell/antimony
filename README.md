@@ -6,7 +6,7 @@ Takes an `.otf` file exported from a program like [Glyphs](http://glyphsapp.com)
 
 I realized this was something I needed when I wanted to automate the build process for my icon fonts without having to go to a website, upload a file, select some config, download more files, then move them into my project.
 
-The project is named for antimony, element 51. Alloyed with lead, it enhances the definition of cast metal type.
+The project is named after element 51. Alloyed with lead, antimony enhances the definition of cast metal type.
 
 ## Installation & Use
 
