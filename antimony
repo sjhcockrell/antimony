@@ -19,9 +19,9 @@ font_eot="$arg_name.eot"
 font_woff="$arg_name.woff"
 
 
-#######
-# Setup 
-
+##########
+# Setup  {
+#
 NORMAL=$(tput sgr0)
 UNDERLINE=$(tput smul)
 RED=$(tput setaf 1)
@@ -44,21 +44,43 @@ error () {
     exit 1
 }
 
+usage () {
+    printf "Usage: antimony [OTF FONT]\n\n"
+    exit 1
+}
+# } end setup
 
-###########
-# Scripting
-stage "Building .ttf, .woff, .eot"
-task "Making .ttf"
-fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.ttf');Quit(0);" > /dev/null 2>&1
 
-complete
+#############
+# Scripting {
+#
+printf "\n[Sb] Antimony\n\n"
 
-task "Making .eot"
-ttf2eot $arg_path/$font_ttf > $arg_path/$font_eot 2>&1
-complete
 
-task "Making .woff"
-sfnt2woff $1 > $arg_path/$font_woff 2>&1
-complete
+# Check for args
+if [ $# -eq 0 ]; then
+    usage 
+fi
+
+# Check for file exist, then convert
+if [ -e $1 ]; then 
+
+    stage "Building .ttf, .woff, .eot"
+    task "Making .ttf"
+    fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.ttf');Quit(0);" > /dev/null 2>&1
+    complete
+
+    task "Making .eot"
+    ttf2eot $arg_path/$font_ttf > $arg_path/$font_eot 2>&1
+    complete
+
+    task "Making .woff"
+    sfnt2woff $1 > $arg_path/$font_woff 2>&1
+    complete
+
+else
+    error "Can't find that file. Check your path?"
+fi
+# } end scripting
 
 exit 0
