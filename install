@@ -137,4 +137,21 @@ else
 fi
 complete
 
-exit 0
+
+##################
+# Install antimony
+stage "Installing antimony"
+which antimony > /dev/null 2>&1
+if [ "$?" -ne "0" ]; then
+    task "Copying antimony to $INSTALL_DIR"
+    cp antimony $INSTALL_DIR
+
+else
+    task "Already installed"
+fi 
+complete
+
+
+#####
+# END
+exit 0;
