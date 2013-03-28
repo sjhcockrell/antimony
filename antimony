@@ -65,13 +65,19 @@ fi
 # Check for file exist, then convert
 if [ -e $1 ]; then 
 
-    stage "Building .ttf, .woff, .eot"
+    stage "Building .ttf, .svg, .woff, .eot"
+
     task "Making .ttf"
     fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.ttf');Quit(0);" > /dev/null 2>&1
     complete
 
+    task "Making .svg"
+    fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.svg');Quit(0);" > /dev/null 2>&1
+    complete
+
+
     task "Making .eot"
-    ttf2eot $arg_path/$font_ttf > $arg_path/$font_eot 2>&1
+    ttf2eot < $arg_path/$font_ttf > $arg_path/$font_eot 2>&1
     complete
 
     task "Making .woff"
