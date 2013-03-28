@@ -21,7 +21,7 @@ Run the install script.
 
 Antimony should be available to use from the command line now.
 
-    antimony [otf font file];
+    antimony [font.otf];
 
 ## Possible Features
 
