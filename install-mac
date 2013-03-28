@@ -137,5 +137,4 @@ else
 fi
 complete
 
-
-printf "All Done.\n"
+exit 0

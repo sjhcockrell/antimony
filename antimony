@@ -18,13 +18,47 @@ font_ttf="$arg_name.ttf"
 font_eot="$arg_name.eot"
 font_woff="$arg_name.woff"
 
-# Step 1: Generate TTF Version of OTF font.
-fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.ttf');Quit(0);"
 
-# Step 2: Generate EOT Version from TTF
-ttf2eot $arg_path/$font_ttf > $arg_path/$font_eot;
+#######
+# Setup 
 
-# Step 3: Generate WOFF Version from OTF
-sfnt2woff $1 > $arg_path/$font_woff;
+NORMAL=$(tput sgr0)
+UNDERLINE=$(tput smul)
+RED=$(tput setaf 1)
+GREEN=$(tput setaf 2)
 
-# Done.
+stage () {
+    printf "${UNDERLINE}$1${NORMAL}\n"
+}
+
+task () {
+    printf "    $1...\n"
+}
+
+complete () {
+    printf "    ${GREEN}Done${NORMAL}\n\n"
+}
+
+error () {
+    printf "${RED}${UNDERLINE}Error:${NORMAL} $1\n\n"
+    exit 1
+}
+
+
+###########
+# Scripting
+stage "Building .ttf, .woff, .eot"
+task "Making .ttf"
+fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.ttf');Quit(0);" > /dev/null 2>&1
+
+complete
+
+task "Making .eot"
+ttf2eot $arg_path/$font_ttf > $arg_path/$font_eot 2>&1
+complete
+
+task "Making .woff"
+sfnt2woff $1 > $arg_path/$font_woff 2>&1
+complete
+
+exit 0
