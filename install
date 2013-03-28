@@ -32,6 +32,10 @@ task () {
     printf "    $1...\n"
 }
 
+ask () {
+    printf "    ${RED}$1${NORMAL} : "
+}
+
 complete () {
     printf "    ${GREEN}Done${NORMAL}\n\n"
 }
@@ -148,6 +152,19 @@ if [ "$?" -ne "0" ]; then
 
 else
     task "Already installed"
+    ask "Options: [u]pdate or [s]kip?"
+    read -n 1 action 
+    printf '\n'
+    case $action in 
+        u )
+            task "Replacing existing copy of antimony with this one"
+            rm $INSTALL_DIR/antimony
+            cp antimony $INSTALL_DIR
+            ;;
+        s )
+            task "Skipping"
+            ;;
+    esac
 fi 
 complete
 
