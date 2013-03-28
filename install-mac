@@ -1,3 +1,129 @@
 #!/bin/sh
+#
+#   install-mac
+#   
+#   Basic installation script for Mac OSX. Depends
+#   on HomeBrew.
+#
 
-# install-mac
+TTF2E0T_RESOURCE="http://ttf2eot.googlecode.com/files/ttf2eot-0.0.2-2.tar.gz"
+SFNT2WOFF_RESOURCE="http://people.mozilla.com/~jkew/woff/woff-code-latest.zip"
+
+
+DIR_TTF="ttf2eot"
+DIR_SFNT="woff"
+
+INSTALL_DIR="/usr/local/bin"
+
+
+#   Colorset
+NORMAL=$(tput sgr0)
+UNDERLINE=$(tput smul)
+RED=$(tput setaf 1)
+GREEN=$(tput setaf 2)
+
+
+#   Output commands
+stage () {
+    printf "${UNDERLINE}$1${NORMAL}...\n"
+}
+
+task () {
+    printf "    $1 ... "
+}
+
+complete () {
+    printf "${GREEN}Done${NORMAL}\n\n"
+}
+
+error () {
+    printf "${RED}${UNDERLINE}Error:${NORMAL} $1\n\n"
+    exit 1
+}
+
+
+##########################
+#   Checking for Homebrew.
+which brew > /dev/null 2>&1
+if [ "$?" -ne "0" ]; then
+    error "Looks like you don't have brew installed. Run to install homebrew:\n       \`ruby -e \"\$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)\"\`\n"
+fi
+
+
+#####################################################
+#   Install fontforge, if it's not installed already.
+stage "Installing fontforge"
+which fontforge > /dev/null 2>&1
+if [ "$?" -ne "0" ]; then
+    task "brew install fontforge" 
+    brew install fontforge > /dev/null 2>&1
+    
+    task "brew link fontforge"
+    brew link fontforge > /dev/null 2>&1
+
+    # Error with Homebrew; it needs certain files to be chowned 
+    # in order to work.
+    if [ "$?" -ne "0" ]; then 
+        error "Seems like you don't have the correct permissions.\nTry running:\n\`sudo chown -R \$USER:admin /usr/local\`"
+    fi
+
+else
+    task "Already installed"
+fi
+complete
+
+
+#################
+# Install ttf2eot
+stage "Installing ttf2eot"
+which ttf2eot > /dev/null 2>&1
+if [ "$?" -ne "0" ]; then
+
+    task "curl $TTF2E0T_RESOURCE > ttf2eot.tar.gz"
+    curl $TTF2E0T_RESOURCE > $DIR_TTF.tar.gz
+
+    if [ "$?" -ne "0" ]; then
+        error "Problem downloading ttf2eot from Google Code (http://code.google.com/p/ttf2eot/)."
+    fi
+
+    task "unpacking"
+    tar -xzf $DIR_TTF.tar.gz;
+    cd $DIR_TTF
+
+    task "compiling"
+    make
+
+    task "installing in $INSTALL_DIR"
+    cp ttf2eot $INSTALL_DIR
+
+else 
+    task "Already installed"
+fi
+complete
+
+
+####################
+# Install sfnt2woff
+stage "Installing sfnt2woff"
+which sfnt2woff > /dev/null 2>&1
+if [ "$?" -ne "0" ]; then
+    task "curl $SFNT2WOFF_RESOURCE > $DIR_SFNT.zip"
+    curl $SFNT2WOFF_RESOURCE > $DIR_SFNT.zip
+    
+    task "unpacking"
+    unzip $DIR_SFNT.zip -d $DIR_SFNT
+
+    task "compiling"
+    make
+
+    task "installing in $INSTALL_DIR"
+    cp sfnt2woff $INSTALL_DIR
+    cp woff2sfnt $INSTALL_DIR
+    
+else
+    task "Already installed"
+fi
+complete
+
+
+printf "All Done."
