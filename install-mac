@@ -25,15 +25,15 @@ GREEN=$(tput setaf 2)
 
 #   Output commands
 stage () {
-    printf "${UNDERLINE}$1${NORMAL}...\n"
+    printf "${UNDERLINE}$1${NORMAL}\n"
 }
 
 task () {
-    printf "    $1 ... "
+    printf "    $1...\n"
 }
 
 complete () {
-    printf "${GREEN}Done${NORMAL}\n\n"
+    printf "    ${GREEN}Done${NORMAL}\n\n"
 }
 
 error () {
@@ -44,7 +44,7 @@ error () {
 
 ##########################
 #   Checking for Homebrew.
-which brew > /dev/null 2>&1
+which brew 2>&1
 if [ "$?" -ne "0" ]; then
     error "Looks like you don't have brew installed. Run to install homebrew:\n       \`ruby -e \"\$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)\"\`\n"
 fi
@@ -53,13 +53,13 @@ fi
 #####################################################
 #   Install fontforge, if it's not installed already.
 stage "Installing fontforge"
-which fontforge > /dev/null 2>&1
+which fontforge 2>&1
 if [ "$?" -ne "0" ]; then
-    task "brew install fontforge" 
-    brew install fontforge > /dev/null 2>&1
-    
-    task "brew link fontforge"
-    brew link fontforge > /dev/null 2>&1
+    task "Downloading"
+    brew install fontforge 2>&1
+   
+    task "Installing"
+    brew link fontforge
 
     # Error with Homebrew; it needs certain files to be chowned 
     # in order to work.
@@ -79,22 +79,28 @@ stage "Installing ttf2eot"
 which ttf2eot > /dev/null 2>&1
 if [ "$?" -ne "0" ]; then
 
-    task "curl $TTF2E0T_RESOURCE > ttf2eot.tar.gz"
-    curl $TTF2E0T_RESOURCE > $DIR_TTF.tar.gz
+    task "Downloading"
+    curl $TTF2E0T_RESOURCE > $DIR_TTF.tar.gz 
 
     if [ "$?" -ne "0" ]; then
         error "Problem downloading ttf2eot from Google Code (http://code.google.com/p/ttf2eot/)."
     fi
 
-    task "unpacking"
-    tar -xzf $DIR_TTF.tar.gz;
-    cd $DIR_TTF
+    task "Unpacking"
+    tar -xzf $DIR_TTF.tar.gz 2>&1
 
-    task "compiling"
+    task "Compiling"
+    cd $DIR_TTF 2>&1
     make
 
-    task "installing in $INSTALL_DIR"
-    cp ttf2eot $INSTALL_DIR
+    task "Installing in $INSTALL_DIR"
+    cp ttf2eot $INSTALL_DIR 2>&1
+
+    task "Cleaning up"
+    cd .. 2>&1
+    rm -rf $DIR_TTF 2>&1
+    rm $DIR_TTF.tar.gz 2>&1
+
 
 else 
     task "Already installed"
@@ -107,18 +113,24 @@ complete
 stage "Installing sfnt2woff"
 which sfnt2woff > /dev/null 2>&1
 if [ "$?" -ne "0" ]; then
-    task "curl $SFNT2WOFF_RESOURCE > $DIR_SFNT.zip"
+    task "Downloading"
     curl $SFNT2WOFF_RESOURCE > $DIR_SFNT.zip
     
-    task "unpacking"
-    unzip $DIR_SFNT.zip -d $DIR_SFNT
+    task "Unpacking"
+    unzip $DIR_SFNT.zip -d $DIR_SFNT 2>&1
 
-    task "compiling"
-    make
+    task "Compiling"
+    cd $DIR_SFNT 2>&1
+    make 2>&1
 
-    task "installing in $INSTALL_DIR"
+    task "Installing in $INSTALL_DIR"
     cp sfnt2woff $INSTALL_DIR
     cp woff2sfnt $INSTALL_DIR
+
+    task "Cleaning up"
+    cd .. 2>&1
+    rm -rf $DIR_SFNT 2>&1
+    rm $DIR_SFNT.zip 2>&1
     
 else
     task "Already installed"
@@ -126,4 +138,4 @@ fi
 complete
 
 
-printf "All Done."
+printf "All Done.\n"
