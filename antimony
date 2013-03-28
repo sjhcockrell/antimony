@@ -1,0 +1,33 @@
+#!/bin/sh
+
+#  antimony 
+#
+#  A simple script that will generate 'ttf', 'eot', and 'woff'
+#  font formats suitable for displaying webfonts. 
+#
+#  I use it in conjunction with Glyphs Mini, which exports an 
+#  'otf' font format, to create icon sets.
+#
+#  Named for Antimony (Sb), Atomic Number 51, a hardening
+#  element added to lead type to create sharp edges.
+#
+
+
+font_otf="$1.otf"
+font_ttf="$1.ttf"
+font_eot="$1.eot"
+font_woff="$1.woff"
+
+# Step 1: Generate TTF Version of OTF font.
+fontforge -c '
+    Open("'$font_otf'");
+    Generate("'$font_ttf'");
+    Quit(0);'
+
+# Step 2: Generate EOT Version from TTF
+ttf2eot $font_ttf > $font_eot;
+
+# Step 3: Generate WOFF Version from OTF
+sfnt2woff $font_otf > $font_woff;
+
+# Done.
