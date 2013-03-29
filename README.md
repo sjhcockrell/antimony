@@ -28,3 +28,4 @@ Antimony should be available to use from the command line now.
 * Exporting character ranges.
 * Compressed output.
 * Programmatic Em values.
+* Optional file types
