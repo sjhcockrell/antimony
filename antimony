@@ -64,6 +64,18 @@ error () {
     printf "${RED}${UNDERLINE}Error:${NORMAL}  $1\n\n"
     exit 1
 }
+
+invalid_option_error () {
+    printf "${RED}${UNDERLINE}Error:${NORMAL}  Invalid option ${BOLD}-$1${NORMAL}.\n"
+    printf "        See 'antimony --help' for usage.\n\n"
+    exit 1;
+}
+
+requires_argument_error () {
+    printf "${RED}${UNDERLINE}Error:${NORMAL}  Option ${BOLD}-$1${NORMAL} requires an argument.\n"
+    printf "        See 'antimony --help' for usage.\n\n"
+    exit 1
+}
 # }
 
 
@@ -95,10 +107,6 @@ usage () {
 title "[Sb] Antimony"
 
 
-# NEEDS TO CHECK FOR:
-#     there are arguments
-#     first arg file exists
-#     first arg file is an `otf` file
 
 # Variable init
 FORMATS=
@@ -133,10 +141,28 @@ else
                         debug "--help triggered"
                         usage
                     ;;
+                    
+                    # Chars
+                    # Accepts a comma-separated list of unicode ranges.
+                    #   ex: E000-E999,F000-F2FF
+                    char|chars)
+                        debug "--char triggered"
+
+                        # Value should be next index over.
+                        CHARS=${!OPTIND}
+
+                        # Primitive validation:
+                        # $CHARS can't be empty || start with a dash.
+                        if [[ $CHARS == \-* ]] || [[ ! $CHARS ]]
+                        then
+                            requires_argument_error "-$OPTARG"
+                        fi
+                    ;;
 
                     # Formats
                     # This takes an argument after the flag as a comma-separated
                     # list of formats.
+                    #   ex: svg,woff,eot,ttf
                     format|formats)
                         debug "--format triggered"
                        
@@ -148,7 +174,7 @@ else
                         # $FORMATS can't be empty || start with a dash.
                         if [[ $FORMATS == \-* ]] || [[ ! $FORMATS ]]
                         then
-                            error "Option ${BOLD}--$OPTARG${NORMAL} requires an argument, got '$FORMATS' instead.\n        See 'antimony --help' for usage."
+                            requires_argument_error "-$OPTARG"
                         fi
                        
                         # Shift after validation.
@@ -157,7 +183,7 @@ else
 
                     # Invalid argument
                     *)
-                        error "Invalid option ${BOLD}--$OPTARG${NORMAL}\nSee 'antimony --help' for usage."
+                        invalid_option_error "-$OPTARG"
                     ;;
 
                 esac
@@ -187,20 +213,26 @@ else
 
             # Error. Invalid argument.
             \?)
-                error "Invalid option ${BOLD}-$OPTARG${NORMAL}\nSee 'antimony --help' for usage."
+                invalid_option_error "$OPTARG"
             ;;
 
             # Option requires an argument.
             :)
-                error "Option ${BOLD}-$OPTARG${NORMAL} requires an argument.\nSee 'antimony --help' for usage."
+                requires_argument_error "$OPTARG"
             ;;
 
         esac
     done
 fi
 
+
+debug "> Short circuit exit"
 exit 0;
 
+# NEEDS TO CHECK FOR:
+#     there are arguments
+#     first arg file exists
+#     first arg file is an `otf` file
 
 
 # How to parse a comma-separated array of values.
