@@ -48,15 +48,20 @@ line () {
 
 ok () {
     indent 1
-    printf "${GREEN}ok!${NORMAL}\n\n"
+    printf "${GREEN}Okay${NORMAL}\n\n"
 }
 
 debug () {
-    printf "${YELLOW}Debug:${NORMAL} $1\n"
+    printf "${YELLOW}Debug:${NORMAL}  $1\n"
+}
+
+# Unlike error, warning will allow processing to continue.
+warn () {
+    printf "${RED}${UNDERlINE}Warning:${NORMAL} $1\n\n"
 }
 
 error () {
-    printf "${RED}${UNDERLINE}Error:${NORMAL} $1\n\n"
+    printf "${RED}${UNDERLINE}Error:${NORMAL}  $1\n\n"
     exit 1
 }
 # }
@@ -73,7 +78,7 @@ usage () {
     indent 2
     line "antimony [FONT.otf] --export [options]\n"
 
-    line "--export, -e [ttf,svg,eot,woff]"
+    line "--format, -f [ttf,svg,eot,woff]"
     indent 2
     line "Accepts a comma-separated list of file formats to export."
     printf "\n"
@@ -96,8 +101,8 @@ title "[Sb] Antimony"
 #     first arg file is an `otf` file
 
 # Variable init
-formats=
-chars=
+FORMATS=
+CHARS=
 
 # No arguments. Print usage.
 if [[ $# == 0 ]]
@@ -120,23 +125,34 @@ else
             # This is needed for compatibility with BSD getopt, 
             # which is currently the default on OSX.
             -)
-
-                #val="${!OPTIND}"
-                #OPTIND=$(( $OPTIND + 1 ))
-
-                #debug "- flag triggered"
-                #debug "OPTARG ... $OPTARG"
-                #debug "OPTIND ... $OPTIND"
-                #debug "val ...... $val"
-
-                debug "- flag triggered"
-                debug "OPTARG = $OPTARG"
-
+                debug "- flag, long format"
                 case $OPTARG in 
 
                     # Help
                     help)
                         debug "--help triggered"
+                        usage
+                    ;;
+
+                    # Formats
+                    # This takes an argument after the flag as a comma-separated
+                    # list of formats.
+                    format|formats)
+                        debug "--format triggered"
+                       
+                        # The value should be the next index over.
+                        # This actually does require a value to be provided.
+                        FORMATS=${!OPTIND}
+                     
+                        # Primitive validation:
+                        # $FORMATS can't be empty || start with a dash.
+                        if [[ $FORMATS == \-* ]] || [[ ! $FORMATS ]]
+                        then
+                            error "Option ${BOLD}--$OPTARG${NORMAL} requires an argument, got '$FORMATS' instead.\n        See 'antimony --help' for usage."
+                        fi
+                       
+                        # Shift after validation.
+                        OPTIND=$(( $OPTIND + 1 ))
                     ;;
 
                     # Invalid argument
@@ -153,7 +169,7 @@ else
                 usage
             ;;
             
-            # Export formats.
+            # Formats.
             f)
                 debug "-f flag triggered"
             ;;
@@ -184,6 +200,21 @@ else
 fi
 
 exit 0;
+
+
+
+# How to parse a comma-separated array of values.
+#
+# Splitting comma-separated string into an array.
+#IFS=',' read -ra FORMATS <<< "$VAL"
+#for i in "${FORMATS[@]}"
+#do
+#    debug $i
+#done
+
+
+
+
 
 
 # ------------- OLD ---------------
