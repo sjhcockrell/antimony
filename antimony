@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #  antimony 
 #
@@ -11,13 +11,15 @@
 #  Named for Antimony (Sb), Atomic Number 51, a hardening
 #  element added to lead type to create sharp edges.
 
-# {
+# oh my, the colours
 NORMAL=$(tput sgr0)
 BOLD=$(tput bold)
 UNDERLINE=$(tput smul)
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
+YELLOW=$(tput setaf 3)
 
+# text formatting
 indent () {
     i=$1 
     while [ $i -gt 0 ]
@@ -26,6 +28,7 @@ indent () {
         i=$(( $i - 1 ))
     done
 }
+
 title () {
     printf "\n${BOLD}$1${NORMAL}\n"
 }
@@ -43,9 +46,13 @@ line () {
     printf -- "$1\n"
 }
 
-complete () {
+ok () {
     indent 1
-    printf "${GREEN}Done.${NORMAL}\n\n"
+    printf "${GREEN}ok!${NORMAL}\n\n"
+}
+
+debug () {
+    printf "${YELLOW}Debug:${NORMAL} $1\n"
 }
 
 error () {
@@ -66,7 +73,7 @@ usage () {
     indent 2
     line "antimony [FONT.otf] --export [options]\n"
 
-    line '--export, -e [ttf,svg,eot,woff]'
+    line "--export, -e [ttf,svg,eot,woff]"
     indent 2
     line "Accepts a comma-separated list of file formats to export."
     printf "\n"
@@ -76,7 +83,7 @@ usage () {
     line "Prints this menu. Woohoo!"
     printf "\n"
 
-    exit 1
+    exit 2
 }
 # } 
 
@@ -88,13 +95,98 @@ title "[Sb] Antimony"
 #     first arg file exists
 #     first arg file is an `otf` file
 
-if [ $# -eq 0 ]; then
+# Variable init
+formats=
+chars=
+
+# No arguments. Print usage.
+if [[ $# == 0 ]]
+then
     usage
+
+# Process arguments.
+#
+# References:
+# http://wiki.bash-hackers.org/howto/getopts_tutorial
+# http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options
+# http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682
+else
+
+    while getopts ":hf:c:-:" opt 
+    do
+        case $opt in 
+
+            # Long Options
+            # This is needed for compatibility with BSD getopt, 
+            # which is currently the default on OSX.
+            -)
+
+                #val="${!OPTIND}"
+                #OPTIND=$(( $OPTIND + 1 ))
+
+                #debug "- flag triggered"
+                #debug "OPTARG ... $OPTARG"
+                #debug "OPTIND ... $OPTIND"
+                #debug "val ...... $val"
+
+                debug "- flag triggered"
+                debug "OPTARG = $OPTARG"
+
+                case $OPTARG in 
+
+                    # Help
+                    help)
+                        debug "--help triggered"
+                    ;;
+
+                    # Invalid argument
+                    *)
+                        error "Invalid option ${BOLD}--$OPTARG${NORMAL}\nSee 'antimony --help' for usage."
+                    ;;
+
+                esac
+            ;;
+
+            # Print help
+            h)
+                debug "-h flag triggered"
+                usage
+            ;;
+            
+            # Export formats.
+            f)
+                debug "-f flag triggered"
+            ;;
+
+            # Character Ranges
+            c)
+                debug "-c flag triggered" 
+            ;;
+
+            # End of arguments.
+            --)
+                debug "end of arguments."
+                break
+            ;;
+
+            # Error. Invalid argument.
+            \?)
+                error "Invalid option ${BOLD}-$OPTARG${NORMAL}\nSee 'antimony --help' for usage."
+            ;;
+
+            # Option requires an argument.
+            :)
+                error "Option ${BOLD}-$OPTARG${NORMAL} requires an argument.\nSee 'antimony --help' for usage."
+            ;;
+
+        esac
+    done
 fi
 
-if [ -ne $1 ]; then
-    error "Can't find that file. Check the path?"
-fi
+exit 0;
+
+
+# ------------- OLD ---------------
 
 
 FILE_PATH=`dirname $1`
@@ -109,20 +201,19 @@ if [ -e $1 ]; then
 
     task "Making .ttf"
     fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.ttf');Quit(0);" > /dev/null 2>&1
-    complete
+    ok 
 
     task "Making .svg"
     fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.svg');Quit(0);" > /dev/null 2>&1
-    complete
-
+    ok 
 
     task "Making .eot"
     ttf2eot < $FILE_PATH/$FILE_NAME.ttf > $FILE_PATH/$FILE_NAME.eot 2>&1
-    complete
+    ok 
 
     task "Making .woff"
     sfnt2woff $1 > $FILE_PATH/$FILE_NAME.woff 2>&1
-    complete
+    ok 
 
 else
     error "Can't find that file. Check your path?"
