@@ -86,18 +86,20 @@ requires_argument_error () {
 # or when a suppied with `--help` or `-h` flags.
 usage () {
     title "Simple command line font conversion."
-    line "\nusage:  antimony [FONT.otf]"
-    indent 2
-    line "antimony [FONT.otf] --export [options]\n"
+    line "usage: antimony [-f font_formats] [-c unicode_charactter_range] font.otf\n"
 
-    line "--format, -f [ttf,svg,eot,woff]"
+    line "-f [ttf,svg,eot,woff]"
     indent 2
-    line "Accepts a comma-separated list of file formats to export."
+    line "Format. Accepts a comma-separated list of file formats to export."
     printf "\n"
-    
-    line "--help, -h"
+
+    line "-c [unicode-unicode]"
     indent 2
-    line "Prints this menu. Woohoo!"
+    line "Characters. Accepts a range of unicode characters to be include."
+    
+    line "-h"
+    indent 2
+    line "Help. Prints this menu."
     printf "\n"
 
     exit 2
@@ -106,9 +108,9 @@ usage () {
 
 title "[Sb] Antimony"
 
-
-
-# Variable init
+OTF=
+OTF_PATH=
+OTF_NAME=
 FORMATS=
 CHARS=
 
@@ -116,171 +118,160 @@ CHARS=
 if [[ $# == 0 ]]
 then
     usage
-
+fi
 # Process arguments.
 #
 # References:
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
 # http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options
 # http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682
-else
-
-    while getopts ":hf:c:-:" opt 
-    do
-        case $opt in 
-
-            # Long Options
-            # This is needed for compatibility with BSD getopt, 
-            # which is currently the default on OSX.
-            -)
-                debug "- flag, long format"
-                case $OPTARG in 
-
-                    # Help
-                    help)
-                        debug "--help triggered"
-                        usage
-                    ;;
-                    
-                    # Chars
-                    # Accepts a comma-separated list of unicode ranges.
-                    #   ex: E000-E999,F000-F2FF
-                    char|chars)
-                        debug "--char triggered"
-
-                        # Value should be next index over.
-                        CHARS=${!OPTIND}
-
-                        # Primitive validation:
-                        # $CHARS can't be empty || start with a dash.
-                        if [[ $CHARS == \-* ]] || [[ ! $CHARS ]]
-                        then
-                            requires_argument_error "-$OPTARG"
-                        fi
-                    ;;
-
-                    # Formats
-                    # This takes an argument after the flag as a comma-separated
-                    # list of formats.
-                    #   ex: svg,woff,eot,ttf
-                    format|formats)
-                        debug "--format triggered"
-                       
-                        # The value should be the next index over.
-                        # This actually does require a value to be provided.
-                        FORMATS=${!OPTIND}
-                     
-                        # Primitive validation:
-                        # $FORMATS can't be empty || start with a dash.
-                        if [[ $FORMATS == \-* ]] || [[ ! $FORMATS ]]
-                        then
-                            requires_argument_error "-$OPTARG"
-                        fi
-                       
-                        # Shift after validation.
-                        OPTIND=$(( $OPTIND + 1 ))
-                    ;;
-
-                    # Invalid argument
-                    *)
-                        invalid_option_error "-$OPTARG"
-                    ;;
-
-                esac
-            ;;
-
-            # Print help
-            h)
-                debug "-h flag triggered"
-                usage
-            ;;
-            
-            # Formats.
-            f)
-                debug "-f flag triggered"
-            ;;
-
-            # Character Ranges
-            c)
-                debug "-c flag triggered" 
-            ;;
-
-            # End of arguments.
-            --)
-                debug "end of arguments."
-                break
-            ;;
-
-            # Error. Invalid argument.
-            \?)
-                invalid_option_error "$OPTARG"
-            ;;
-
-            # Option requires an argument.
-            :)
-                requires_argument_error "$OPTARG"
-            ;;
-
-        esac
-    done
-fi
 
 
-debug "> Short circuit exit"
-exit 0;
-
-# NEEDS TO CHECK FOR:
-#     there are arguments
-#     first arg file exists
-#     first arg file is an `otf` file
-
-
-# How to parse a comma-separated array of values.
-#
-# Splitting comma-separated string into an array.
-#IFS=',' read -ra FORMATS <<< "$VAL"
-#for i in "${FORMATS[@]}"
-#do
-#    debug $i
+#debug "> Testing getopts in a loop for arg processing."
+#while getopts "f:c:" opt; do
+#    echo $opt
+#    echo $OPTARG
 #done
+#shift $((OPTIND-1))
 
 
+while getopts ":hf:c:" opt 
+do
+    case $opt in 
 
+        # Print help
+        h)
+            usage
+        ;;
+        
+        # Formats.
+        # This takes an argument after the flag as a comma-separated
+        # list of formats.
+        #   ex: svg,woff,eot,ttf
+        f)
+            FORMATS=$OPTARG
 
+            if [[ $FORMATS == \-* ]] || [[ ! $FORMATS ]] 
+            then
+                requires_argument_error "$opt"
+            fi
+        ;;
 
+        # Character Ranges
+        c)
+            CHARS=$OPTARG
 
-# ------------- OLD ---------------
+            if [[ $CHARS == \-* ]] || [[ ! $CHARS ]]
+            then
+                requires_argument_error "$opt"
+            fi
+        ;;
 
+        # End of arguments.
+        --)
+            debug "end of arguments."
+            break
+        ;;
 
-FILE_PATH=`dirname $1`
-FILE_NAME=`basename $1 .otf`
+        # Error. Invalid argument.
+        # Since the agrument turns into a `?` during processing,
+        # getting the failed flag requires calling $OPTARG.
+        \?)
+            invalid_option_error "$OPTARG"
+        ;;
 
+        # Option requires an argument.
+        # Since the actual argument turns into `:` or `?`, getting
+        # the failed flag requires getting the $OPTARG
+        :)
+            requires_argument_error "$OPTARG"
+        ;;
 
+    esac
+done
 
-# Check for file exist, then convert
-if [ -e $1 ]; then 
+shift $((OPTIND-1))
 
-    subtitle "Building .ttf, .svg, .woff, .eot"
+# Save target file as var.
+OTF=$1
 
-    task "Making .ttf"
-    fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.ttf');Quit(0);" > /dev/null 2>&1
-    ok 
+# Check if a file argument has been provided.
+if [ ! -f $OTF ]
+then
+    error "Can't find that .otf file. Check your path?"
+fi
 
-    task "Making .svg"
-    fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.svg');Quit(0);" > /dev/null 2>&1
-    ok 
+# Check if the argument has the correct extension.
+if [[ $OTF != *.otf ]]
+then
+    error "Antimony only works with *.otf files for now. :("
+fi
 
-    task "Making .eot"
-    ttf2eot < $FILE_PATH/$FILE_NAME.ttf > $FILE_PATH/$FILE_NAME.eot 2>&1
-    ok 
+FILE_PATH=`dirname $OTF`
+FILE_NAME=`basename $OTF .otf`
 
-    task "Making .woff"
-    sfnt2woff $1 > $FILE_PATH/$FILE_NAME.woff 2>&1
-    ok 
+# Split formats into an array.
+# IF    : formats exists, split into array.
+# ELSE  : default to building all.
+if [ -z $FORMATS ]
+then
+    debug "Formats is empty, build all."
+    FORMATS=('ttf' 'svg' 'woff' 'eot')
 
 else
-    error "Can't find that file. Check your path?"
+    STRING=$FORMATS
+    IFS=',', read -ra FORMATS <<< "$STRING"
 fi
-# } end scripting
+
+
+# Begin build.
+
+subtitle "Building fonts"
+
+FLAG_KEEP_TTF=
+
+for format in ${FORMATS[@]}
+do
+    case $format in
+        ttf)
+            task "Making $FILE_NAME.ttf"
+            fontforge -lang=ff -c "Open('$OTF');Generate('$OTF':r+'.ttf');Quit(0);" > /dev/null 2>&1
+            FLAG_KEEP_TTF=1
+            ok
+        ;;
+
+        svg)
+            task "Making $FILE_NAME.svg"
+            fontforge -lang=ff -c "Open('$OTF');Generate('$OTF':r+'.svg');Quit(0);" > /dev/null 2>&1
+            ok
+        ;;
+
+        eot)
+            task "Making $FILE_NAME.eot"
+
+            # If they don't want a TTF outputted, and one doesn't exist here, 
+            # we need to create one to export an eot.
+            if [ -z $FLAG_KEEP_TTF ] && [ ! -f $FILE_PATH/$FILE_NAME.ttf ]
+            then
+                fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.ttf');Quit(0);" > /dev/null 2>&1
+            fi
+
+            ttf2eot < $FILE_PATH/$FILE_NAME.ttf > $FILE_PATH/$FILE_NAME.eot 2>&1
+
+            # Cleanup any unwanted ttfs.
+            if [ -z $FLAG_KEEP_TTF ]
+            then
+                rm $FILE_PATH/$FILE_NAME.ttf 2>&1
+            fi
+            ok
+        ;;
+
+        woff)
+            task "Making $FILE_NAME.woff"
+            sfnt2woff $OTF > $FILE_PATH/$FILE_NAME.woff 2>&1
+            ok
+        ;;
+    esac
+done
 
 exit 0
