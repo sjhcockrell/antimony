@@ -226,7 +226,7 @@ fi
 
 # Begin build.
 
-subtitle "Building fonts"
+subtitle "\nBuilding fonts"
 
 FLAG_KEEP_TTF=
 
