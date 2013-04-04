@@ -19,7 +19,6 @@ RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
 YELLOW=$(tput setaf 3)
 
-# text formatting
 indent () {
     i=$1 
     while [ $i -gt 0 ]
@@ -119,22 +118,8 @@ if [[ $# == 0 ]]
 then
     usage
 fi
+
 # Process arguments.
-#
-# References:
-# http://wiki.bash-hackers.org/howto/getopts_tutorial
-# http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options
-# http://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682
-
-
-#debug "> Testing getopts in a loop for arg processing."
-#while getopts "f:c:" opt; do
-#    echo $opt
-#    echo $OPTARG
-#done
-#shift $((OPTIND-1))
-
-
 while getopts ":hf:c:" opt 
 do
     case $opt in 
@@ -225,7 +210,13 @@ fi
 
 
 # Begin build.
-
+#
+# TODO: Add scripting for creating character ranges; currently not supported
+# by this script.
+#
+# See:
+# http://fontforge.org/scripting.html
+#
 subtitle "\nBuilding fonts"
 
 FLAG_KEEP_TTF=
