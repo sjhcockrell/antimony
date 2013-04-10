@@ -85,19 +85,19 @@ requires_argument_error () {
 # or when a suppied with `--help` or `-h` flags.
 usage () {
     title "Simple command line font conversion."
-    line "usage: antimony [-f font_formats] [-c unicode_charactter_range] font.otf\n"
+    line "\nusage: antimony [-f font_formats] [-c unicode_charactter_range] font.otf\n"
 
     line "-f [ttf,svg,eot,woff]"
-    indent 2
+    indent 1
     line "Format. Accepts a comma-separated list of file formats to export."
     printf "\n"
 
-    line "-c [unicode-unicode]"
-    indent 2
-    line "Characters. Accepts a range of unicode characters to be include."
+    #line "-c [unicode-unicode]"
+    #indent 1
+    #line "Characters. Accepts a range of unicode characters to be include."
     
     line "-h"
-    indent 2
+    indent 1
     line "Help. Prints this menu."
     printf "\n"
 
