@@ -19,13 +19,14 @@ Run the install script.
     cd antimony
     ./install
 
-Antimony should be available to use from the command line now.
+Antimony should be available to use from the command line now. Run this to see options:
 
-    antimony [font.otf];
+    antimony -h
 
-## Possible Features
+## Future
 
-* Exporting character ranges.
-* Compressed output.
-* Programmatic Em values.
-* Optional file types
+Version 0.1 is extremely bare-bones. To make it what I'd consider a 1.0 release that actually covers all the basics, Antimony needs:
+
+* Subsetting with character ranges.
+* Em Square values.
+* Compressed output, if/when possible.
