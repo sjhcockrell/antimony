@@ -8,10 +8,11 @@
 
 TTF2E0T_RESOURCE="http://ttf2eot.googlecode.com/files/ttf2eot-0.0.2-2.tar.gz"
 SFNT2WOFF_RESOURCE="http://people.mozilla.com/~jkew/woff/woff-code-latest.zip"
-
+TTF2SVG_RESOURCE="https://github.com/sjhcockrell/Apache-Batik-1.7/blob/master/batik-uber-1.7.jar?raw=true"
 
 DIR_TTF="ttf2eot"
 DIR_SFNT="woff"
+DIR_SVG="ttf2svg"
 
 INSTALL_DIR="/usr/local/bin"
 
@@ -56,10 +57,10 @@ fi
 
 #####################################################
 #   Install fontforge, if it's not installed already.
-stage "Installing fontforge"
+stage "Installing fontforge, via HomeBrew"
 which fontforge 2>&1
 if [ "$?" -ne "0" ]; then
-    task "Downloading"
+    task "Downloading FontForge"
     brew install fontforge 2>&1
    
     task "Installing"
@@ -83,7 +84,7 @@ stage "Installing ttf2eot"
 which ttf2eot > /dev/null 2>&1
 if [ "$?" -ne "0" ]; then
 
-    task "Downloading"
+    task "Downloading from http://ttf2eot.googlecode.com/"
     curl $TTF2E0T_RESOURCE > $DIR_TTF.tar.gz 
 
     if [ "$?" -ne "0" ]; then
@@ -117,7 +118,7 @@ complete
 stage "Installing sfnt2woff"
 which sfnt2woff > /dev/null 2>&1
 if [ "$?" -ne "0" ]; then
-    task "Downloading"
+    task "Downloading from http://people.mozilla.com/~jkew/woff/"
     curl $SFNT2WOFF_RESOURCE > $DIR_SFNT.zip
     
     task "Unpacking"
@@ -142,6 +143,29 @@ fi
 complete
 
 
+################################
+# Install apache batik (ttf2svg)
+stage "Installing Apache Batik 1.7 jar"
+if [ -ne $INSTALL_DIR/batik-uber-1.7.jar ]; then
+    task "Downloading from https://github.com/sjhcockrell/batik-uber-1.7.jar"
+    curl -L $TTF2SVG_RESOURCE > $DIR_SVG.jar
+
+    if ["$?" -ne 0]; then
+        error "Problem downloading batik-uber-1.7.jar from Github" 
+    fi
+
+    task "Installing in $INSTALL_DIR"
+    cp $DIR_SVG.jar $INSTALL_DIR 2>&1
+
+    task "Cleaning up"
+    rm -rf $DIR_SVG.jar 2>&1
+
+else
+    task "Already installed"
+fi
+
+
+
 ##################
 # Install antimony
 stage "Installing antimony"
@@ -152,6 +176,7 @@ if [ "$?" -ne "0" ]; then
 
 else
     task "Already installed"
+# Print version numbers
     ask "Options: [u]pdate or [s]kip?"
     read -n 1 action 
     printf '\n'
