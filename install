@@ -176,7 +176,6 @@ if [ "$?" -ne "0" ]; then
 
 else
     task "Already installed"
-# Print version numbers
     ask "Options: [u]pdate or [s]kip?"
     read -n 1 action 
     printf '\n'
