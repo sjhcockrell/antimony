@@ -195,6 +195,7 @@ fi
 FILE_PATH=`dirname $OTF`
 FILE_NAME=`basename $OTF .otf`
 
+
 # Split formats into an array.
 # IF    : formats exists, split into array.
 # ELSE  : default to building all.
@@ -221,6 +222,14 @@ subtitle "\nBuilding fonts"
 
 FLAG_KEEP_TTF=
 
+# Make a unique id attr that we can apply to the <font> el in the SVG file
+# from the first one-word component of the file name.
+#
+# (This implementation seems pretty terrible, not gonna lie. Sorry, everybody.
+TMP=`echo $FILE_NAME | sed -e 's/_/-/g' -e 's/ /-/g'`
+TMP=(${TMP//-/ })
+FONT_ID_ATTR=${TMP[0]}
+
 for format in ${FORMATS[@]}
 do
     case $format in
@@ -233,7 +242,23 @@ do
 
         svg)
             task "Making $FILE_NAME.svg"
-            fontforge -lang=ff -c "Open('$OTF');Generate('$OTF':r+'.svg');Quit(0);" > /dev/null 2>&1
+            task "(Adding id attribute of $FONT_ID_ATTR to <font> in SVG)"
+
+            # If they don't want a TTF outputted, and one doesn't exist here, 
+            # we need to create one to export an eot.
+            if [ -z $FLAG_KEEP_TTF ] && [ ! -f $FILE_PATH/$FILE_NAME.ttf ]
+            then
+                fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.ttf');Quit(0);" > /dev/null 2>&1
+            fi
+
+            # Actually make the SVG file now...
+            java -jar /usr/local/bin/batik-uber-1.7.jar $FILE_PATH/$FILE_NAME.ttf -autorange -id $FONT_ID_ATTR -o $FILE_PATH/$FILE_NAME.svg 2>&1
+
+            # Cleanup any unwanted ttfs.
+            if [ -z $FLAG_KEEP_TTF ]
+            then
+                rm $FILE_PATH/$FILE_NAME.ttf 2>&1
+            fi
             ok
         ;;
 
