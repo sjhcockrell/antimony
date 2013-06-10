@@ -12,7 +12,7 @@ TTF2SVG_RESOURCE="https://github.com/sjhcockrell/Apache-Batik-1.7/blob/master/ba
 
 DIR_TTF="ttf2eot"
 DIR_SFNT="woff"
-DIR_SVG="ttf2svg"
+DIR_SVG="batik-uber-1.7"
 
 INSTALL_DIR="/usr/local/bin"
 
@@ -146,11 +146,12 @@ complete
 ################################
 # Install apache batik (ttf2svg)
 stage "Installing Apache Batik 1.7 jar"
-if [ ! -f $INSTALL_DIR/batik-uber-1.7.jar ]; then
+if [ ! -f $INSTALL_DIR/$DIR_SVG.jar ]; then
     task "Downloading from https://github.com/sjhcockrell/batik-uber-1.7.jar"
+    task "(Sorry, this jarfile is pretty big)"
     curl -L $TTF2SVG_RESOURCE > $DIR_SVG.jar
 
-    if ["$?" -ne 0]; then
+    if [ "$?" -ne 0 ]; then
         error "Problem downloading batik-uber-1.7.jar from Github" 
     fi
 
