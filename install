@@ -146,7 +146,7 @@ complete
 ################################
 # Install apache batik (ttf2svg)
 stage "Installing Apache Batik 1.7 jar"
-if [ -ne $INSTALL_DIR/batik-uber-1.7.jar ]; then
+if [ ! -f $INSTALL_DIR/batik-uber-1.7.jar ]; then
     task "Downloading from https://github.com/sjhcockrell/batik-uber-1.7.jar"
     curl -L $TTF2SVG_RESOURCE > $DIR_SVG.jar
 
