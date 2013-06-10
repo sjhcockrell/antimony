@@ -220,12 +220,12 @@ fi
 #
 subtitle "\nBuilding fonts"
 
-FLAG_KEEP_TTF=
-
 # Make a unique id attr that we can apply to the <font> el in the SVG file
 # from the first one-word component of the file name.
 #
 # (This implementation seems pretty terrible, not gonna lie. Sorry, everybody.
+
+FLAG_KEEP_TTF=
 TMP=`echo $FILE_NAME | sed -e 's/_/-/g' -e 's/ /-/g'`
 TMP=(${TMP//-/ })
 FONT_ID_ATTR=${TMP[0]}
