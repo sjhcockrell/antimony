@@ -190,6 +190,7 @@ fi
 if [[ $OTF != *.otf ]]
 then
     error "Antimony only works with *.otf files for now. :("
+	exit 1
 fi
 
 FILE_PATH=`dirname $OTF`
