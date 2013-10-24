@@ -102,9 +102,6 @@ function installScriptRequirement {
 
 }
 
-
-
-
 # =============================================================================
 # {
 
@@ -129,22 +126,10 @@ installScriptRequirement "sfnt2woff" $R_sfnt2woff
 success
 echo
 
-# }
-# =============================================================================
+# fontforge
+# echo "Checking for dependency fontforge..."
 
-
-
-
-
-
-
-
-
-
-
-
-
-##########################
+# OLD BELOW HERE =================v
 #   Checking for Homebrew.
 which brew 2>&1
 if [ "$?" -ne "0" ]; then
@@ -152,8 +137,6 @@ if [ "$?" -ne "0" ]; then
     exit 1
 fi
 
-
-#####################################################
 #   Install fontforge, if it's not installed already.
 echo "Installing fontforge, via HomeBrew"
 which fontforge 2>&1
@@ -177,124 +160,37 @@ fi
 echo "Success"
 
 
-#################
-# Install ttf2eot
-echo "Installing ttf2eot"
-which ttf2eot > /dev/null 2>&1
-if [ "$?" -ne "0" ]; then
-
-    echo "Downloading from http://ttf2eot.googlecode.com/"
-    curl $R_ttf2eot > $DIR_TTF.tar.gz 
-
-    if [ "$?" -ne "0" ]; then
-        echo "Problem downloading ttf2eot from Google Code (http://code.google.com/p/ttf2eot/)."
-        exit 1
-    fi
-
-    echo "Unpacking"
-    tar -xzf $DIR_TTF.tar.gz 2>&1
-
-    echo "Compiling"
-    cd $DIR_TTF 2>&1
-    make
-
-    echo "Installing in $INSTALL_DIR"
-    cp ttf2eot $INSTALL_DIR 2>&1
-
-    echo "Cleaning up"
-    cd .. 2>&1
-    rm -rf $DIR_TTF 2>&1
-    rm $DIR_TTF.tar.gz 2>&1
-
-
-else 
-    echo "Already installed"
-fi
-echo "Success"
-
-
-####################
-# Install sfnt2woff
-echo "Installing sfnt2woff"
-which sfnt2woff > /dev/null 2>&1
-if [ "$?" -ne "0" ]; then
-    echo "Downloading from http://people.mozilla.com/~jkew/woff/"
-    curl $R_sfnt2woff > $DIR_SFNT.zip
-    
-    echo "Unpacking"
-    unzip $DIR_SFNT.zip -d $DIR_SFNT 2>&1
-
-    echo "Compiling"
-    cd $DIR_SFNT 2>&1
-    make 2>&1
-
-    echo "Installing in $INSTALL_DIR"
-    cp sfnt2woff $INSTALL_DIR
-    cp woff2sfnt $INSTALL_DIR
-
-    echo "Cleaning up"
-    cd .. 2>&1
-    rm -rf $DIR_SFNT 2>&1
-    rm $DIR_SFNT.zip 2>&1
-    
-else
-    echo "Already installed"
-fi
-echo "Success"
-
-
-################################
-# Install apache batik (ttf2svg)
-echo "Installing Apache Batik 1.7 jar"
-if [ ! -f $INSTALL_DIR/$DIR_SVG.jar ]; then
-    echo "Downloading from https://github.com/sjhcockrell/batik-uber-1.7.jar"
-    echo "(Sorry, this jarfile is pretty big)"
-    curl -L $R_apacheBatik > $DIR_SVG.jar
-
-    if [ "$?" -ne 0 ]; then
-        echo "Problem downloading batik-uber-1.7.jar from Github" 
-        exit
-    fi
-
-    echo "Installing in $INSTALL_DIR"
-    cp $DIR_SVG.jar $INSTALL_DIR 2>&1
-
-    echo "Cleaning up"
-    rm -rf $DIR_SVG.jar 2>&1
-
-else
-    echo "Already installed"
-fi
-
-
-
-##################
-# Install antimony
-echo "Installing antimony"
+# antimony
+echo "Installing antimony..."
 which antimony > /dev/null 2>&1
-if [ "$?" -ne "0" ]; then
-    echo "Copying antimony to $INSTALL_DIR"
-    cp antimony $INSTALL_DIR
-
+if [[ $? -ne 0 ]]; then
+    echo "Installing antimony..."
+    cp antimony /usr/local/bin/
 else
-    echo "Already installed"
-    printf "Options: [u]pdate or [s]kip?"
-    read -n 1 action 
-    printf '\n'
-    case $action in 
-        u )
-            echo "Replacing existing copy of antimony with this one"
-            rm $INSTALL_DIR/antimony
-            cp antimony $INSTALL_DIR
-            ;;
-        s )
-            echo "Skipping"
-            ;;
+    echo "Already installed."
+
+    # Prompt for what to do
+    printf "${t_blue}${t_bold}Options:${t_reset}"
+    printf "${t_blue}${t_bold}[u]${t_reset}${t_blue}pdate or${t_reset}"
+    printf "${t_blue}${t_bold}[s]${t_reset}${t_blue}kip${t_reset}"
+
+    read -n 1 action
+    case $action in
+            u )
+                echo "Replacing existing copy of antimony with this one"
+                rm /usr/local/bin/antimony
+                cp antimony /usr/local/bin/
+                ;;
+            s )
+                echo "Skipping"
+                ;;
     esac
-fi 
-echo "Success"
+
+fi
+success "Install finished."
 
 
-#####
-# END
-exit 0;
+exit 0
+
+# }
+# =============================================================================
