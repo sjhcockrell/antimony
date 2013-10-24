@@ -1,20 +1,99 @@
-#!/bin/sh
+#!/bin/bash
 #
-#   install.sh
+#   install
 #   Basic installation script for Mac OSX. Depends on `brew` existing.
 
 
 # REQUIREMENTS
-R_tputcolors="https://github.com/sjhcockrell/tputcolors/archive/1.0.tar.gz"         # bash coloring
-R_apacheBatik="https://github.com/sjhcockrell/Apache-Batik-1.7/archive/1.0.tar.gz" # .ttf => .svg
-R_ttf2eot="http://ttf2eot.googlecode.com/files/ttf2eot-0.0.2-2.tar.gz"              # .ttf => .eot
-R_sfnt2woff="http://people.mozilla.com/~jkew/woff/woff-code-latest.zip"             # .ttf => .woff
+R_tputcolors="https://github.com/sjhcockrell/tputcolors/archive/1.0.tar.gz"        # bash coloring
+R_apacheBatik="https://github.com/sjhcockrell/Apache-Batik-1.7/archive/1.7.tar.gz" # .ttf => .svg
+R_ttf2eot="http://ttf2eot.googlecode.com/files/ttf2eot-0.0.2-2.tar.gz"             # .ttf => .eot
+R_sfnt2woff="http://people.mozilla.org/~jkew/woff/woff-code-latest.zip"            # .ttf => .woff
 
 DIR_TTF="ttf2eot"
 DIR_SFNT="woff"
 DIR_SVG="batik-uber-1.7"
 
 INSTALL_DIR="/usr/local/bin"
+PROJECT_URL="https://github.com/sjhcockrell/antimony"
+
+
+# getPackage
+#   Uses `wget` to fetch a file, then extracts it using gzip or tar.
+#   Will throw an error and exit if curl or the unzipping fails.
+# @param $1 : url endpoint for resource
+# @param $2 : variable to populate the file name
+# @return   : dirname of extracted resource
+#
+function getPackage {
+
+    if [[ $# -ne 2 ]]; then
+        echo "getPackage() requires a URL as an argument and a variable name."
+        exit 1
+    fi
+
+    local url=$1
+    local __result=$2
+    local filename=$(basename $url)
+
+    # Downloading
+    echo "Downloading $filename..."
+    wget $1 > /dev/null 2>&1
+
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Resource download failed for $1."
+        echo "       File an issue at https://github.com/sjhcockrell/antimony"
+        exit 1
+    fi
+
+    # Unpacking
+    echo "Unpacking..."
+
+    if [[ $filename =~ \.tar\.gz ]]; then
+        local dirname=$(tar zft $filename | head -n1)
+        tar -xzf $filename
+
+    elif [[ $filename =~ \.zip ]]; then
+        local dirname=${filename%.*}
+        unzip $filename -d $dirname
+    fi
+
+    # Clean up compressed file
+    rm $filename
+
+    # Return variable populated with dirname
+    eval $__result="'$dirname'"
+}
+
+
+# INSTALL tputcolors if not there, then load for life in magical color.
+which tputcolors > /dev/null 2>&1
+if [[ $? -ne 0 ]]; then
+    echo "Installing dependency tputcolors..."
+    getPackage $R_tputcolors colors_dir
+    cp $colors_dir/tputcolors /usr/local/bin/
+    rm -rf $colors_dir
+fi
+source tputcolors
+
+
+
+# DEBUG EXIT
+exit 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
