@@ -17,181 +17,158 @@ DIR_SVG="batik-uber-1.7"
 INSTALL_DIR="/usr/local/bin"
 
 
-#   Colorset
-NORMAL=$(tput sgr0)
-UNDERLINE=$(tput smul)
-RED=$(tput setaf 1)
-GREEN=$(tput setaf 2)
 
-
-#   Output commands
-stage () {
-    printf "${UNDERLINE}$1${NORMAL}\n"
-}
-
-task () {
-    printf "    $1...\n"
-}
-
-ask () {
-    printf "    ${RED}$1${NORMAL} : "
-}
-
-complete () {
-    printf "    ${GREEN}Done${NORMAL}\n\n"
-}
-
-error () {
-    printf "${RED}${UNDERLINE}Error:${NORMAL} $1\n\n"
-    exit 1
-}
 
 
 ##########################
 #   Checking for Homebrew.
 which brew 2>&1
 if [ "$?" -ne "0" ]; then
-    error "Looks like you don't have brew installed. Run to install homebrew:\n       \`ruby -e \"\$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)\"\`\n"
+    echo "Looks like you don't have brew installed. Run to install homebrew:\n       \`ruby -e \"\$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)\"\`\n"
+    exit 1
 fi
 
 
 #####################################################
 #   Install fontforge, if it's not installed already.
-stage "Installing fontforge, via HomeBrew"
+echo "Installing fontforge, via HomeBrew"
 which fontforge 2>&1
 if [ "$?" -ne "0" ]; then
-    task "Downloading FontForge"
+    echo "Downloading FontForge"
     brew install fontforge 2>&1
    
-    task "Installing"
+    echo "Installing"
     brew link fontforge
 
     # Error with Homebrew; it needs certain files to be chowned 
     # in order to work.
     if [ "$?" -ne "0" ]; then 
-        error "Seems like you don't have the correct permissions.\nTry running:\n\`sudo chown -R \$USER:admin /usr/local\`"
+        echo "Seems like you don't have the correct permissions.\nTry running:\n\`sudo chown -R \$USER:admin /usr/local\`"
+        exit 1
     fi
 
 else
-    task "Already installed"
+    echo "Already installed"
 fi
-complete
+echo "Success"
 
 
 #################
 # Install ttf2eot
-stage "Installing ttf2eot"
+echo "Installing ttf2eot"
 which ttf2eot > /dev/null 2>&1
 if [ "$?" -ne "0" ]; then
 
-    task "Downloading from http://ttf2eot.googlecode.com/"
+    echo "Downloading from http://ttf2eot.googlecode.com/"
     curl $R_ttf2eot > $DIR_TTF.tar.gz 
 
     if [ "$?" -ne "0" ]; then
-        error "Problem downloading ttf2eot from Google Code (http://code.google.com/p/ttf2eot/)."
+        echo "Problem downloading ttf2eot from Google Code (http://code.google.com/p/ttf2eot/)."
+        exit 1
     fi
 
-    task "Unpacking"
+    echo "Unpacking"
     tar -xzf $DIR_TTF.tar.gz 2>&1
 
-    task "Compiling"
+    echo "Compiling"
     cd $DIR_TTF 2>&1
     make
 
-    task "Installing in $INSTALL_DIR"
+    echo "Installing in $INSTALL_DIR"
     cp ttf2eot $INSTALL_DIR 2>&1
 
-    task "Cleaning up"
+    echo "Cleaning up"
     cd .. 2>&1
     rm -rf $DIR_TTF 2>&1
     rm $DIR_TTF.tar.gz 2>&1
 
 
 else 
-    task "Already installed"
+    echo "Already installed"
 fi
-complete
+echo "Success"
 
 
 ####################
 # Install sfnt2woff
-stage "Installing sfnt2woff"
+echo "Installing sfnt2woff"
 which sfnt2woff > /dev/null 2>&1
 if [ "$?" -ne "0" ]; then
-    task "Downloading from http://people.mozilla.com/~jkew/woff/"
+    echo "Downloading from http://people.mozilla.com/~jkew/woff/"
     curl $R_sfnt2woff > $DIR_SFNT.zip
     
-    task "Unpacking"
+    echo "Unpacking"
     unzip $DIR_SFNT.zip -d $DIR_SFNT 2>&1
 
-    task "Compiling"
+    echo "Compiling"
     cd $DIR_SFNT 2>&1
     make 2>&1
 
-    task "Installing in $INSTALL_DIR"
+    echo "Installing in $INSTALL_DIR"
     cp sfnt2woff $INSTALL_DIR
     cp woff2sfnt $INSTALL_DIR
 
-    task "Cleaning up"
+    echo "Cleaning up"
     cd .. 2>&1
     rm -rf $DIR_SFNT 2>&1
     rm $DIR_SFNT.zip 2>&1
     
 else
-    task "Already installed"
+    echo "Already installed"
 fi
-complete
+echo "Success"
 
 
 ################################
 # Install apache batik (ttf2svg)
-stage "Installing Apache Batik 1.7 jar"
+echo "Installing Apache Batik 1.7 jar"
 if [ ! -f $INSTALL_DIR/$DIR_SVG.jar ]; then
-    task "Downloading from https://github.com/sjhcockrell/batik-uber-1.7.jar"
-    task "(Sorry, this jarfile is pretty big)"
+    echo "Downloading from https://github.com/sjhcockrell/batik-uber-1.7.jar"
+    echo "(Sorry, this jarfile is pretty big)"
     curl -L $R_apacheBatik > $DIR_SVG.jar
 
     if [ "$?" -ne 0 ]; then
-        error "Problem downloading batik-uber-1.7.jar from Github" 
+        echo "Problem downloading batik-uber-1.7.jar from Github" 
+        exit
     fi
 
-    task "Installing in $INSTALL_DIR"
+    echo "Installing in $INSTALL_DIR"
     cp $DIR_SVG.jar $INSTALL_DIR 2>&1
 
-    task "Cleaning up"
+    echo "Cleaning up"
     rm -rf $DIR_SVG.jar 2>&1
 
 else
-    task "Already installed"
+    echo "Already installed"
 fi
 
 
 
 ##################
 # Install antimony
-stage "Installing antimony"
+echo "Installing antimony"
 which antimony > /dev/null 2>&1
 if [ "$?" -ne "0" ]; then
-    task "Copying antimony to $INSTALL_DIR"
+    echo "Copying antimony to $INSTALL_DIR"
     cp antimony $INSTALL_DIR
 
 else
-    task "Already installed"
-    ask "Options: [u]pdate or [s]kip?"
+    echo "Already installed"
+    printf "Options: [u]pdate or [s]kip?"
     read -n 1 action 
     printf '\n'
     case $action in 
         u )
-            task "Replacing existing copy of antimony with this one"
+            echo "Replacing existing copy of antimony with this one"
             rm $INSTALL_DIR/antimony
             cp antimony $INSTALL_DIR
             ;;
         s )
-            task "Skipping"
+            echo "Skipping"
             ;;
     esac
 fi 
-complete
+echo "Success"
 
 
 #####
