@@ -1,10 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 #
-#   install-mac
-#   
-#   Basic installation script for Mac OSX. Depends
-#   on HomeBrew.
-#
+#   install.sh
+#   Basic installation script for Mac OSX. Depends on `brew` existing.
 
 TTF2E0T_RESOURCE="http://ttf2eot.googlecode.com/files/ttf2eot-0.0.2-2.tar.gz"
 SFNT2WOFF_RESOURCE="http://people.mozilla.com/~jkew/woff/woff-code-latest.zip"
