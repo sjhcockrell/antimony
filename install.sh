@@ -41,8 +41,8 @@ function getPackage {
     wget $1 > /dev/null 2>&1
 
     if [ $? -ne 0 ]; then
-        echo "ERROR: Resource download failed for $1."
-        echo "       File an issue at https://github.com/sjhcockrell/antimony"
+        echo "$(tput setaf 1)ERROR: Resource download failed for $1.$(tput sgr0)"
+        echo "       $(tput setaf 1)File an issue at https://github.com/sjhcockrell/antimony$(tput sgr0)"
         exit 1
     fi
 
