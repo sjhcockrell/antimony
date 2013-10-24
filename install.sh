@@ -28,7 +28,7 @@ PROJECT_URL="https://github.com/sjhcockrell/antimony"
 function getPackage {
 
     if [[ $# -ne 2 ]]; then
-        echo "getPackage() requires a URL as an argument and a variable name."
+        echo "$(tput setaf 1)ERROR: getPackage() requires a URL as an argument and a variable name.$(tput sgr0)"
         exit 1
     fi
 
@@ -58,34 +58,79 @@ function getPackage {
         unzip $filename -d $dirname
     fi
 
-    # Clean up compressed file
+    # Make, if needs making
+    find $dirname/Makefile
+    if [[ $? == 0 ]]; then
+        cd $dirname
+        make
+        cd ../
+    fi
+
+    # Clean up compressed origin file
     rm $filename
 
     # Return variable populated with dirname
     eval $__result="'$dirname'"
 }
 
+# installScriptRequirement
+#   Accepts a dependency script name, and a resource URL, then installs the
+#   appropriate script in usr/local/bin.
+# @param $1 : script name.
+# @param $2 : Resource Url.
+#
+function installScriptRequirement {
 
-# INSTALL tputcolors if not there, then load for life in magical color.
-which tputcolors > /dev/null 2>&1
-if [[ $? -ne 0 ]]; then
-    echo "Installing dependency tputcolors..."
-    getPackage $R_tputcolors colors_dir
-    cp $colors_dir/tputcolors /usr/local/bin/
-    rm -rf $colors_dir
-fi
+    if [[ $# -ne 2 ]]; then
+        echo "$(tput setaf 1)ERROR: installScriptRequirement() requires a script name and URL.$(tput sgr0)"
+        exit 1
+    fi
+
+    local script=$1
+    local url=$2
+
+    echo "Checking for dependency $script..."
+    find /usr/local/bin/$script > /dev/null 2>&1
+    if [[ $? -ne 0 ]]; then
+        echo "Installing dependency $script..."
+        getPackage $url dir
+        cp $dir/$script /usr/local/bin/
+        rm -rf $dir
+    else
+        echo "Already installed."
+    fi
+
+}
+
+
+
+
+# =============================================================================
+# {
+
+# tputcolors
+installScriptRequirement "tputcolors" $R_tputcolors
 source tputcolors
+success
+echo
 
+# batik
+installScriptRequirement "batik.jar" $R_apacheBatik
+success
+echo
 
+# ttf2eot
+installScriptRequirement "ttf2eot" $R_ttf2eot
+success
+echo
 
-# DEBUG EXIT
-exit 0
+# snft2woff
+installScriptRequirement "sfnt2woff" $R_sfnt2woff
+success
+echo
 
-
-
-
-
-
+# }
+# =============================================================================
 
 
 
@@ -115,7 +160,7 @@ which fontforge 2>&1
 if [ "$?" -ne "0" ]; then
     echo "Downloading FontForge"
     brew install fontforge 2>&1
-   
+
     echo "Installing"
     brew link fontforge
 
