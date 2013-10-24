@@ -105,6 +105,26 @@ function installScriptRequirement {
 # =============================================================================
 # {
 
+# install homebrew
+# This is in case you don't have wget, and we need to use brew
+# to install.
+which brew 2>&1
+if [[ $? -ne 0 ]]; then
+    echo "Homebrew is required for installing a few components."
+    echo "Installing brew..."
+    echo "(This may take a minute.)"
+    ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)"
+fi
+
+# Make sure we have wget
+which wget 2>&1
+if [[ $? -ne 0 ]]; then
+    echo "wget is required."
+    echo "Installing wget..."
+    echo "(This may take a minute.)"
+    brew install wget
+fi
+
 # tputcolors
 installScriptRequirement "tputcolors" $R_tputcolors
 source tputcolors
@@ -127,38 +147,25 @@ success
 echo
 
 # fontforge
-# echo "Checking for dependency fontforge..."
+echo "Checking for dependency fontforge..."
+which fontforge > /dev/null 2>&1
+if [[ $? -ne 0 ]]; then
 
-# OLD BELOW HERE =================v
-#   Checking for Homebrew.
-which brew 2>&1
-if [ "$?" -ne "0" ]; then
-    echo "Looks like you don't have brew installed. Run to install homebrew:\n       \`ruby -e \"\$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)\"\`\n"
-    exit 1
-fi
-
-#   Install fontforge, if it's not installed already.
-echo "Installing fontforge, via HomeBrew"
-which fontforge 2>&1
-if [ "$?" -ne "0" ]; then
-    echo "Downloading FontForge"
+    echo "Installing dependency fontforge..."
     brew install fontforge 2>&1
+    chmod 777 /usr/local/share 2>&1
+    brew link fontforge 2>&1
 
-    echo "Installing"
-    brew link fontforge
-
-    # Error with Homebrew; it needs certain files to be chowned 
-    # in order to work.
-    if [ "$?" -ne "0" ]; then 
-        echo "Seems like you don't have the correct permissions.\nTry running:\n\`sudo chown -R \$USER:admin /usr/local\`"
-        exit 1
+    if [[ $? -ne 0 ]]; then
+        error "'brew link fontforge' failed." "This probably means that something in /usr/local/ doesn't have the correct permissions"
+        exit
     fi
 
 else
-    echo "Already installed"
+    echo "Already installed."
 fi
-echo "Success"
-
+success
+echo
 
 # antimony
 echo "Installing antimony..."
@@ -185,7 +192,7 @@ else
 
 fi
 success "Install finished."
-
+echo
 
 exit 0
 
