@@ -170,19 +170,16 @@ else
     echo "Already installed."
 
     # Prompt for what to do
-    printf "${t_blue}${t_bold}Options:${t_reset}"
-    printf "${t_blue}${t_bold}[u]${t_reset}${t_blue}pdate or${t_reset}"
-    printf "${t_blue}${t_bold}[s]${t_reset}${t_blue}kip${t_reset}"
-
+    printf "${t_yellow}Options: [u]pdate or [s]kip? ${t_reset}"
     read -n 1 action
     case $action in
             u )
-                echo "Replacing existing copy of antimony with this one"
+                printf "\nReplacing existing copy of antimony with this one...\n"
                 rm /usr/local/bin/antimony
                 cp antimony /usr/local/bin/
                 ;;
             s )
-                echo "Skipping"
+                printf "\nSkipping.\n"
                 ;;
     esac
 
