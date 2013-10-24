@@ -5,11 +5,10 @@
 
 
 # REQUIREMENTS
-R_tputcolors="https://github.com/sjhcockrell/tputcolors/archive/1.0.tar.gz"                                                 # bash coloring
-R_apacheBatik="https://github.com/sjhcockrell/Apache-Batik-1.7/archive/1.7.tar.gz"                                          # .ttf => .svg
-R_ttf2eot="http://ttf2eot.googlecode.com/files/ttf2eot-0.0.2-2.tar.gz"                                                      # .ttf => .eot
-R_sfnt2woff="http://people.mozilla.org/~jkew/woff/woff-code-latest.zip"                                                     # .ttf => .woff
-R_fontforge="http://sourceforge.net/projects/fontforge/files/fontforge-source/fontforge_full-20120731-b.tar.bz2/download"   # .otf => .ttf
+R_tputcolors="https://github.com/sjhcockrell/tputcolors/archive/1.0.tar.gz"        # bash coloring
+R_apacheBatik="https://github.com/sjhcockrell/Apache-Batik-1.7/archive/1.7.tar.gz" # .ttf => .svg
+R_ttf2eot="http://ttf2eot.googlecode.com/files/ttf2eot-0.0.2-2.tar.gz"             # .ttf => .eot
+R_sfnt2woff="http://people.mozilla.org/~jkew/woff/woff-code-latest.zip"            # .ttf => .woff
 
 DIR_TTF="ttf2eot"
 DIR_SFNT="woff"
@@ -95,20 +94,6 @@ function installScriptRequirement {
     if [[ $? -ne 0 ]]; then
         echo "Installing dependency $script..."
         getPackage $url dir
-
-
-        # fontforge requires special handling
-        if [[ $script == 'fontforge' ]]; then
-            echo "Compiling $script..."
-            echo "(This will take a hot minute. Go get some coffee.)"
-
-            # TODO pipe to dev null
-            cd $dir
-            ./configure
-            make
-            sudo make install
-        fi
-
         cp $dir/$script /usr/local/bin/
         rm -rf $dir
     else
@@ -142,8 +127,38 @@ success
 echo
 
 # fontforge
-installScriptRequirement "fontforge" $R_fontforge
-success
+# echo "Checking for dependency fontforge..."
+
+# OLD BELOW HERE =================v
+#   Checking for Homebrew.
+which brew 2>&1
+if [ "$?" -ne "0" ]; then
+    echo "Looks like you don't have brew installed. Run to install homebrew:\n       \`ruby -e \"\$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)\"\`\n"
+    exit 1
+fi
+
+#   Install fontforge, if it's not installed already.
+echo "Installing fontforge, via HomeBrew"
+which fontforge 2>&1
+if [ "$?" -ne "0" ]; then
+    echo "Downloading FontForge"
+    brew install fontforge 2>&1
+
+    echo "Installing"
+    brew link fontforge
+
+    # Error with Homebrew; it needs certain files to be chowned 
+    # in order to work.
+    if [ "$?" -ne "0" ]; then 
+        echo "Seems like you don't have the correct permissions.\nTry running:\n\`sudo chown -R \$USER:admin /usr/local\`"
+        exit 1
+    fi
+
+else
+    echo "Already installed"
+fi
+echo "Success"
+
 
 # antimony
 echo "Installing antimony..."
@@ -158,18 +173,19 @@ else
     printf "${t_yellow}Options: [u]pdate or [s]kip? ${t_reset}"
     read -n 1 action
     case $action in
-        u )
-            printf "\nReplacing existing copy of antimony with this one...\n"
-            rm /usr/local/bin/antimony
-            cp antimony /usr/local/bin/
-            ;;
-        s )
-            printf "\nSkipping.\n"
-            ;;
+            u )
+                printf "\nReplacing existing copy of antimony with this one...\n"
+                rm /usr/local/bin/antimony
+                cp antimony /usr/local/bin/
+                ;;
+            s )
+                printf "\nSkipping.\n"
+                ;;
     esac
 
 fi
 success "Install finished."
+
 
 exit 0
 
