@@ -253,7 +253,7 @@ do
             fi
 
             # Actually make the SVG file now...
-            java -jar /usr/local/bin/batik-uber-1.7.jar $FILE_PATH/$FILE_NAME.ttf -autorange -id $FONT_ID_ATTR -o $FILE_PATH/$FILE_NAME.svg 2>&1
+            java -jar /usr/local/bin/batik.jar $FILE_PATH/$FILE_NAME.ttf -autorange -id $FONT_ID_ATTR -o $FILE_PATH/$FILE_NAME.svg 2>&1
 
             # Cleanup any unwanted ttfs.
             if [ -z $FLAG_KEEP_TTF ]
