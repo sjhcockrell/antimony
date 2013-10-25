@@ -11,5 +11,8 @@ rm $INSTALL_DIR/ttf2eot
 rm $INSTALL_DIR/sfnt2woff
 rm $INSTALL_DIR/antimony
 
+brew remove gettext     # ff dep
+brew unlink fontconfig  # ff dep
+
 brew unlink fontforge
 brew remove fontforge
