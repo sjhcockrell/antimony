@@ -182,6 +182,8 @@ echo "Checking for dependency fontforge..."
 if [ ! -e $INSTALL_DIR/fontforge ]; then
 
     echo "Installing dependency fontforge..."
+    echo "(This will take a couple minutes. Go get some coffee.)"
+    brew link libtiff   # Needed to make brew not freak out.
     brew install fontforge 2>&1
     chmod 777 /usr/local/share 2>&1
     brew link fontforge 2>&1
