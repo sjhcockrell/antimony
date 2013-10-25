@@ -121,6 +121,7 @@ else
     echo "Updating brew (just to be safe)..."
     brew update > /dev/null 2>&1
     echo "$(tput setaf 2)Success$(tput sgr0)"
+    echo
 fi
 
 # Make sure we have wget
@@ -130,6 +131,7 @@ if [ ! -e /usr/local/bin/wget ]; then
     echo "(This may take a minute.)"
     brew install wget > /dev/null 2>&1
     echo "$(tput setaf 2)Success$(tput sgr0)"
+    echo
 fi
 
 # tputcolors
