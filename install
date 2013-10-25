@@ -66,6 +66,7 @@ function getPackage {
         cd ../
     fi
 
+    echo "Already installed."
     # Clean up compressed origin file
     rm $filename
 
@@ -104,6 +105,10 @@ function installScriptRequirement {
 # =============================================================================
 # {
 
+echo
+echo "$(tput bold)[Sb] Installing Antimony$(tput sgr0)"
+echo
+
 # install homebrew
 # This is in case you don't have wget, and we need to use brew
 # to install.
@@ -125,6 +130,16 @@ fi
 # tputcolors
 installScriptRequirement "tputcolors" $R_tputcolors
 source tputcolors
+success
+echo
+
+# Make sure we have Xcode and Xcode command line tools.
+echo "Checking for dependency Xcode..."
+if [ ! -e /Applications/Xcode.app ]; then
+    error "Xcode is required for installing a few components." "Try again after installing from ${t_bold}https://itunes.apple.com/us/app/xcode/id497799835"
+    exit 1
+fi
+echo "Already installed."
 success
 echo
 
