@@ -42,7 +42,7 @@ function getPackage {
 
     if [ $? -ne 0 ]; then
         echo "$(tput setaf 1)ERROR: Resource download failed for $1.$(tput sgr0)"
-        echo "       $(tput setaf 1)File an issue at https://github.com/sjhcockrell/antimony$(tput sgr0)"
+        echo "$(tput setaf 1)       File an issue at https://github.com/sjhcockrell/antimony$(tput sgr0)"
         exit 1
     fi
 
@@ -62,11 +62,19 @@ function getPackage {
     find $dirname/Makefile
     if [[ $? == 0 ]]; then
         cd $dirname
-        make
+        make > /dev/null 2>&1
+
+        if [ $? -ne 0 ]; then
+            echo "$(tput setaf 1)ERROR: `make` failed for $1.$(tput sgr0)"
+            echo "$(tput setaf 1)       Aborting.$(tput sgr0)"
+            cd ../
+            rm $filename
+            exit 1
+        fi
+
         cd ../
     fi
 
-    echo "Already installed."
     # Clean up compressed origin file
     rm $filename
 
@@ -202,7 +210,7 @@ else
                 rm /usr/local/bin/antimony
                 cp antimony /usr/local/bin/
                 ;;
-            s )
+            * )
                 printf "\nSkipping.\n"
                 ;;
     esac
