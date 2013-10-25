@@ -51,11 +51,11 @@ function getPackage {
 
     if [[ $filename =~ \.tar ]]; then
         local dirname=$(tar zft $filename | head -n1)
-        tar -xzf $filename
+        tar -xzf $filename > /dev/null 2>&1
 
     elif [[ $filename =~ \.zip ]]; then
         local dirname=${filename%.*}
-        unzip $filename -d $dirname
+        unzip $filename -d $dirname > /dev/null 2>&1
     fi
 
     # Make, if needs making
@@ -128,10 +128,11 @@ if [ ! -e $INSTALL_DIR/brew ]; then
     echo "Homebrew is required for installing a few components."
     echo "Installing brew..."
     echo "(This may take a minute.)"
-    ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)"
+    ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)" > /dev/null 2>&1
 else
     echo "Updating brew (just to be safe)..."
     brew update > /dev/null 2>&1
+    echo "Updated."
     echo "$(tput setaf 2)Success$(tput sgr0)"
     echo
 fi
@@ -183,10 +184,13 @@ if [ ! -e $INSTALL_DIR/fontforge ]; then
 
     echo "Installing dependency fontforge..."
     echo "(This will take a couple minutes. Go get some coffee.)"
-    brew link libtiff   # Needed to make brew not freak out.
-    brew install fontforge 2>&1
-    chmod 777 /usr/local/share 2>&1
-    brew link fontforge 2>&1
+    chmod 777 /usr/local/share > /dev/null 2>&1
+
+    # Making brew not freak out
+    brew unlink libtiff > /dev/null 2>&1
+    brew link libtiff > /dev/null 2>&1
+
+    brew install fontforge > /dev/null 2>&1
 
     if [[ $? -ne 0 ]]; then
         error "'brew link fontforge' failed." "This probably means that something in /usr/local/ doesn't have the correct permissions"
@@ -202,7 +206,6 @@ echo
 # antimony
 echo "Installing antimony..."
 if [ ! -e $INSTALL_DIR/antimony ]; then
-    echo "Installing antimony..."
     cp antimony $INSTALL_DIR/
 else
     echo "Already installed."
