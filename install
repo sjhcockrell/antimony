@@ -59,20 +59,24 @@ function getPackage {
     fi
 
     # Make, if needs making
-    find $dirname/Makefile
-    if [[ $? == 0 ]]; then
+    if [ -e $dirname/Makefile ]; then
+        touch make.log
         cd $dirname
-        make > /dev/null 2>&1
+        make > ../make.log 2>&1
 
+        #if [ $? == 0 ]; then
         if [ $? -ne 0 ]; then
-            echo "$(tput setaf 1)ERROR: `make` failed for $1.$(tput sgr0)"
-            echo "$(tput setaf 1)       Aborting.$(tput sgr0)"
             cd ../
+            echo "$(tput setaf 1)ERROR: \`make\` failed for $filename.$(tput sgr0)"
+            echo "$(tput setaf 1)       Printing stack trace for debugging.$(tput sgr0)"
+            echo "$(tput setaf 3)DEBUG TRACE:$(tput sgr0)"
+            echo "$(tput setaf 3)$(cat make.log)$(tput sgr0)"
             rm $filename
             exit 1
         fi
 
         cd ../
+        rm make.log
     fi
 
     # Clean up compressed origin file
