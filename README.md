@@ -8,8 +8,8 @@ Antimony is element 51 on the periodic table. When alloyed with lead, it enhance
 
 ## Requirements
 
-- Mac OS X 10.6 - 10.9
-- Xcode
+- Mac OS X 10.7+
+- Xcode 4.x +
 
 ## Installation & Use
 
