@@ -12,45 +12,57 @@
 #  element added to lead type to create sharp edges.
 
 
-invalid_option_error () {
-    printf "${RED}${UNDERLINE}Error:${NORMAL}  Invalid option ${BOLD}-$1${NORMAL}.\n"
-    printf "        See 'antimony --help' for usage.\n\n"
-    exit 1;
-}
+# VARIABLES
 
-requires_argument_error () {
-    printf "${RED}${UNDERLINE}Error:${NORMAL}  Option ${BOLD}-$1${NORMAL} requires an argument.\n"
-    printf "        See 'antimony --help' for usage.\n\n"
+
+# printInvalidOptionError
+#   Prints generic message about a bad arg.
+#
+function printInvalidOptionError {
+    error "Invalid option \`$1\'" "See \`antimony --help\` for usage."
+    echo
     exit 1
 }
-# }
 
-
-
-# USAGE {
+# printRequiresArgumentError
+#   Prints generic message about a flag needing an arg.
 #
-# Invoked when `antimony` called without arguments,
-# or when a suppied with `--help` or `-h` flags.
-usage () {
-    echo "Simple command line font conversion."
-    echo "\nusage: antimony [-f font_formats] [-c unicode_charactter_range] font.otf\n"
+function printRequiresArgumentError {
+    error "Option -$1 requires an argument." "See \`antimony --help\` for usage."
+    echo
+    exit 1
+}
 
-    echo "-f [ttf,svg,eot,woff]"
-    echo "Format. Accepts a comma-separated list of file formats to export."
-    printf "\n"
+# usage
+#   Prints usage instructions. Called when antimony invoked without flags,
+#   or with `--help` or `-h` flags.
+#
+function usage {
+    echo "usage: antimony [-f font_formats] [-c unicode_charactter_range] font.otf"
+    echo
+    echo "  -f [ttf,svg,eot,woff]"
+    echo "     Format. Accepts a comma-separated list of file formats to export."
+    echo
 
-    #echo "-c [unicode-unicode]"
-    #echo "Characters. Accepts a range of unicode characters to be include."
-    
-    echo "-h"
-    echo "Help. Prints this menu."
-    printf "\n"
+    # Option that doesn't exist yet.
+    #echo "  -c [unicode-unicode]"
+    #echo "     Characters. Accepts a range of unicode characters to be include."
 
+    echo "  -h"
+    echo "     Help. Prints this menu."
+    echo
     exit 2
 }
-# } 
 
-echo "[Sb] Antimony"
+
+# =============================================================================
+# {
+
+source /usr/local/bin/tputcolors
+
+echo
+echo "${t_white}${t_bold}[Sb] Antimony${t_reset}"
+echo
 
 OTF=
 OTF_PATH=
@@ -59,21 +71,20 @@ FORMATS=
 CHARS=
 
 # No arguments. Print usage.
-if [[ $# == 0 ]]
-then
+if [[ $# == 0 ]]; then
     usage
 fi
 
 # Process arguments.
 while getopts ":hf:c:" opt 
 do
-    case $opt in 
+    case $opt in
 
         # Print help
         h)
             usage
         ;;
-        
+
         # Formats.
         # This takes an argument after the flag as a comma-separated
         # list of formats.
@@ -83,7 +94,7 @@ do
 
             if [[ $FORMATS == \-* ]] || [[ ! $FORMATS ]] 
             then
-                requires_argument_error "$opt"
+                printRequiresArgumentError "$opt"
             fi
         ;;
 
@@ -93,7 +104,7 @@ do
 
             if [[ $CHARS == \-* ]] || [[ ! $CHARS ]]
             then
-                requires_argument_error "$opt"
+                printRequiresArgumentError "$opt"
             fi
         ;;
 
@@ -107,14 +118,14 @@ do
         # Since the agrument turns into a `?` during processing,
         # getting the failed flag requires calling $OPTARG.
         \?)
-            invalid_option_error "$OPTARG"
+            printInvalidOptionError "$OPTARG"
         ;;
 
         # Option requires an argument.
         # Since the actual argument turns into `:` or `?`, getting
         # the failed flag requires getting the $OPTARG
         :)
-            requires_argument_error "$OPTARG"
+            printRequiresArgumentError "$OPTARG"
         ;;
 
     esac
@@ -237,3 +248,6 @@ do
 done
 
 exit 0
+
+# }
+# =============================================================================
