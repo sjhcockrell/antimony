@@ -49,7 +49,7 @@ function getPackage {
     # Unpacking
     echo "Unpacking..."
 
-    if [[ $filename =~ \.tar\.gz ]]; then
+    if [[ $filename =~ \.tar ]]; then
         local dirname=$(tar zft $filename | head -n1)
         tar -xzf $filename
 
