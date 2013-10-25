@@ -209,7 +209,7 @@ if [ ! -e $INSTALL_DIR/fontforge ]; then
         error "'brew link fontforge' failed." "This probably means that something in /usr/local/ doesn't have the correct permissions"
         echo "${t_yellow}DEBUG TRACE:${t_reset}"
         echo "${t_yellow}$(cat brew.log)${t_reset}"
-        exit
+        exit 1
     fi
 
     # cleanup
