@@ -1,0 +1,15 @@
+#!/usr/bin/bash
+#
+#   uninstall
+#   Removes dependencies for antimony. Useful for debugging.
+
+INSTALL_DIR="/usr/local/bin"
+
+rm $INSTALL_DIR/tputcolors
+rm $INSTALL_DIR/batik.jar
+rm $INSTALL_DIR/ttf2eot
+rm $INSTALL_DIR/sfnt2woff
+rm $INSTALL_DIR/antimony
+
+brew unlink fontforge
+brew remove fontforge
