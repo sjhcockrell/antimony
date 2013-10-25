@@ -53,7 +53,6 @@ source /usr/local/bin/tputcolors
 
 echo
 echo "${t_white}${t_bold}[Sb] Antimony${t_reset}"
-echo
 
 OTF=
 OTF_PATH=
@@ -160,9 +159,6 @@ fi
 # See:
 # http://fontforge.org/scripting.html
 #
-echo
-echo "Building fonts"
-echo
 
 # Make a unique id attr that we can apply to the <font> el in the SVG file
 # from the first one-word component of the file name.
@@ -177,7 +173,7 @@ FONT_ID_ATTR=${TMP[0]}
 for format in ${FORMATS[@]}; do
     case $format in
         ttf)
-            echo "Making $FILE_NAME.ttf"
+            echo "Making $FILE_NAME.ttf..."
             fontforge -lang=ff -c "Open('$OTF');Generate('$OTF':r+'.ttf');Quit(0);" > /dev/null 2>&1
 
             if [ $? -ne 0 ]; then
@@ -188,11 +184,12 @@ for format in ${FORMATS[@]}; do
 
             FLAG_KEEP_TTF=1
             success
+            echo
         ;;
 
         svg)
-            echo "Making $FILE_NAME.svg"
-            echo "(Adding id attribute of $FONT_ID_ATTR to <font> in SVG)"
+            echo "Making $FILE_NAME.svg..."
+            echo "Adding id attribute of $FONT_ID_ATTR to <font> in SVG..."
 
             # If they don't want a TTF outputted, and one doesn't exist here,
             # we need to create one to export an eot.
@@ -214,10 +211,11 @@ for format in ${FORMATS[@]}; do
                 rm $FILE_PATH/$FILE_NAME.ttf 2>&1
             fi
             success
+            echo
         ;;
 
         eot)
-            echo "Making $FILE_NAME.eot"
+            echo "Making $FILE_NAME.eot..."
 
             # If they don't want a TTF outputted, and one doesn't exist here,
             # we need to create one to export an eot.
@@ -238,10 +236,11 @@ for format in ${FORMATS[@]}; do
                 rm $FILE_PATH/$FILE_NAME.ttf 2>&1
             fi
             success
+            echo
         ;;
 
         woff)
-            echo "Making $FILE_NAME.woff"
+            echo "Making $FILE_NAME.woff..."
             sfnt2woff $OTF > $FILE_PATH/$FILE_NAME.woff 2>&1
 
             if [ $? -ne 0 ]; then
@@ -251,6 +250,7 @@ for format in ${FORMATS[@]}; do
             fi
 
             success
+            echo
         ;;
     esac
 done
