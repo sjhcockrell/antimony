@@ -184,18 +184,33 @@ if [ ! -e $INSTALL_DIR/fontforge ]; then
 
     echo "Installing dependency fontforge..."
     echo "(This will take a couple minutes. Go get some coffee.)"
+
+    # brew will occasionally freak out if this dir isn't chmodded.
     chmod 777 /usr/local/share > /dev/null 2>&1
 
-    # Making brew not freak out
+    # libtiff can make brew freak out occasionally.
+    # Unlink and relink.
     brew unlink libtiff > /dev/null 2>&1
     brew link libtiff > /dev/null 2>&1
 
-    brew install fontforge > /dev/null 2>&1
+    # Mac OS X gettext is compiled with a non-compatible with
+    # fontforge compiler. We'll remove and let fontforge install
+    # it for us.
+    brew remove gettext
+
+    # finally:
+    touch brew.log
+    brew install fontforge > brew.log 2>&1
 
     if [[ $? -ne 0 ]]; then
         error "'brew link fontforge' failed." "This probably means that something in /usr/local/ doesn't have the correct permissions"
+        echo "${t_yellow}DEBUG TRACE:${t_reset}"
+        echo "${t_yellow}$(cat brew.log)${t_reset}"
         exit
     fi
+
+    # cleanup
+    rm brew.log
 
 else
     echo "Already installed."
