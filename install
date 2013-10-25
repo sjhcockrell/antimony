@@ -117,6 +117,10 @@ if [ ! -e /usr/local/bin/brew ]; then
     echo "Installing brew..."
     echo "(This may take a minute.)"
     ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)"
+else
+    echo "Updating brew (just to be safe)..."
+    brew update > /dev/null 2>&1
+    echo "$(tput setaf 2)Success$(tput sgr0)"
 fi
 
 # Make sure we have wget
@@ -124,7 +128,8 @@ if [ ! -e /usr/local/bin/wget ]; then
     echo "wget is required."
     echo "Installing wget..."
     echo "(This may take a minute.)"
-    brew install wget
+    brew install wget > /dev/null 2>&1
+    echo "$(tput setaf 2)Success$(tput sgr0)"
 fi
 
 # tputcolors
