@@ -1,111 +1,58 @@
 #!/bin/bash
-
-#  antimony 
 #
-#  A simple script that will generate 'ttf', 'eot', and 'woff'
-#  font formats suitable for displaying webfonts. 
+# antimony
+# A simple script that will generate 'ttf', 'eot', and 'woff'
+# font formats suitable for displaying webfonts.
+
+
+
+# printInvalidOptionError
+#   Prints generic message about a bad arg.
 #
-#  I use it in conjunction with Glyphs Mini, which exports an 
-#  'otf' font format, to create icon sets.
-#
-#  Named for Antimony (Sb), Atomic Number 51, a hardening
-#  element added to lead type to create sharp edges.
-
-# oh my, the colours
-NORMAL=$(tput sgr0)
-BOLD=$(tput bold)
-UNDERLINE=$(tput smul)
-RED=$(tput setaf 1)
-GREEN=$(tput setaf 2)
-YELLOW=$(tput setaf 3)
-
-indent () {
-    i=$1 
-    while [ $i -gt 0 ]
-    do
-        printf "    "
-        i=$(( $i - 1 ))
-    done
-}
-
-title () {
-    printf "\n${BOLD}$1${NORMAL}\n"
-}
-
-subtitle () {
-    printf "${UNDERLINE}$1${NORMAL}\n"
-}
-
-task () {
-    indent 1
-    printf "$1...\n"
-}
-
-line () {
-    printf -- "$1\n"
-}
-
-ok () {
-    indent 1
-    printf "${GREEN}Okay${NORMAL}\n\n"
-}
-
-debug () {
-    printf "${YELLOW}Debug:${NORMAL}  $1\n"
-}
-
-# Unlike error, warning will allow processing to continue.
-warn () {
-    printf "${RED}${UNDERlINE}Warning:${NORMAL} $1\n\n"
-}
-
-error () {
-    printf "${RED}${UNDERLINE}Error:${NORMAL}  $1\n\n"
+function printInvalidOptionError {
+    error "Invalid option \`$1\'" "See \`antimony --help\` for usage."
+    echo
     exit 1
 }
 
-invalid_option_error () {
-    printf "${RED}${UNDERLINE}Error:${NORMAL}  Invalid option ${BOLD}-$1${NORMAL}.\n"
-    printf "        See 'antimony --help' for usage.\n\n"
-    exit 1;
-}
-
-requires_argument_error () {
-    printf "${RED}${UNDERLINE}Error:${NORMAL}  Option ${BOLD}-$1${NORMAL} requires an argument.\n"
-    printf "        See 'antimony --help' for usage.\n\n"
+# printRequiresArgumentError
+#   Prints generic message about a flag needing an arg.
+#
+function printRequiresArgumentError {
+    error "Option -$1 requires an argument." "See \`antimony --help\` for usage."
+    echo
     exit 1
 }
-# }
 
-
-
-# USAGE {
+# usage
+#   Prints usage instructions. Called when antimony invoked without flags,
+#   or with `--help` or `-h` flags.
 #
-# Invoked when `antimony` called without arguments,
-# or when a suppied with `--help` or `-h` flags.
-usage () {
-    title "Simple command line font conversion."
-    line "\nusage: antimony [-f font_formats] [-c unicode_charactter_range] font.otf\n"
+function usage {
+    echo "usage: antimony [-f font_formats] [-c unicode_charactter_range] font.otf"
+    echo
+    echo "  -f [ttf,svg,eot,woff]"
+    echo "     Format. Accepts a comma-separated list of file formats to export."
+    echo
 
-    line "-f [ttf,svg,eot,woff]"
-    indent 1
-    line "Format. Accepts a comma-separated list of file formats to export."
-    printf "\n"
+    # Option that doesn't exist yet.
+    #echo "  -c [unicode-unicode]"
+    #echo "     Characters. Accepts a range of unicode characters to be include."
 
-    #line "-c [unicode-unicode]"
-    #indent 1
-    #line "Characters. Accepts a range of unicode characters to be include."
-    
-    line "-h"
-    indent 1
-    line "Help. Prints this menu."
-    printf "\n"
-
+    echo "  -h"
+    echo "     Help. Prints this menu."
+    echo
     exit 2
 }
-# } 
 
-title "[Sb] Antimony"
+
+# =============================================================================
+# {
+
+source /usr/local/bin/tputcolors
+
+echo
+echo "${t_white}${t_bold}[Sb] Antimony${t_reset}"
 
 OTF=
 OTF_PATH=
@@ -114,47 +61,41 @@ FORMATS=
 CHARS=
 
 # No arguments. Print usage.
-if [[ $# == 0 ]]
-then
+if [[ $# == 0 ]]; then
     usage
 fi
 
 # Process arguments.
-while getopts ":hf:c:" opt 
-do
-    case $opt in 
+while getopts ":hf:c:" opt; do
+    case $opt in
 
         # Print help
         h)
             usage
         ;;
-        
+
         # Formats.
         # This takes an argument after the flag as a comma-separated
         # list of formats.
         #   ex: svg,woff,eot,ttf
         f)
             FORMATS=$OPTARG
-
-            if [[ $FORMATS == \-* ]] || [[ ! $FORMATS ]] 
-            then
-                requires_argument_error "$opt"
+            if [[ $FORMATS == \-* ]] || [[ ! $FORMATS ]]; then
+                printRequiresArgumentError "$opt"
             fi
         ;;
 
         # Character Ranges
         c)
             CHARS=$OPTARG
-
-            if [[ $CHARS == \-* ]] || [[ ! $CHARS ]]
-            then
-                requires_argument_error "$opt"
+            if [[ $CHARS == \-* ]] || [[ ! $CHARS ]]; then
+                printRequiresArgumentError "$opt"
             fi
         ;;
 
         # End of arguments.
         --)
-            debug "end of arguments."
+            echo "end of arguments."
             break
         ;;
 
@@ -162,14 +103,14 @@ do
         # Since the agrument turns into a `?` during processing,
         # getting the failed flag requires calling $OPTARG.
         \?)
-            invalid_option_error "$OPTARG"
+            printInvalidOptionError "$OPTARG"
         ;;
 
         # Option requires an argument.
         # Since the actual argument turns into `:` or `?`, getting
         # the failed flag requires getting the $OPTARG
         :)
-            requires_argument_error "$OPTARG"
+            printRequiresArgumentError "$OPTARG"
         ;;
 
     esac
@@ -181,16 +122,17 @@ shift $((OPTIND-1))
 OTF=$1
 
 # Check if a file argument has been provided.
-if [ ! -f $OTF ]
-then
+if [ ! -f $OTF ]; then
     error "Can't find that .otf file. Check your path?"
+    echo
+    exit 1
 fi
 
 # Check if the argument has the correct extension.
-if [[ $OTF != *.otf ]]
-then
-    error "Antimony only works with *.otf files for now. :("
-	exit 1
+if [[ $OTF != *.otf ]]; then
+    error "Antimony only works with *.otf files for now." "Quitting."
+    echo
+    exit 1
 fi
 
 FILE_PATH=`dirname $OTF`
@@ -200,11 +142,9 @@ FILE_NAME=`basename $OTF .otf`
 # Split formats into an array.
 # IF    : formats exists, split into array.
 # ELSE  : default to building all.
-if [ -z $FORMATS ]
-then
-    debug "Formats is empty, build all."
+if [ -z $FORMATS ]; then
+    echo "Formats is empty, build all."
     FORMATS=('ttf' 'svg' 'woff' 'eot')
-
 else
     STRING=$FORMATS
     IFS=',', read -ra FORMATS <<< "$STRING"
@@ -219,7 +159,6 @@ fi
 # See:
 # http://fontforge.org/scripting.html
 #
-subtitle "\nBuilding fonts"
 
 # Make a unique id attr that we can apply to the <font> el in the SVG file
 # from the first one-word component of the file name.
@@ -231,64 +170,96 @@ TMP=`echo $FILE_NAME | sed -e 's/_/-/g' -e 's/ /-/g'`
 TMP=(${TMP//-/ })
 FONT_ID_ATTR=${TMP[0]}
 
-for format in ${FORMATS[@]}
-do
+for format in ${FORMATS[@]}; do
     case $format in
         ttf)
-            task "Making $FILE_NAME.ttf"
+            echo "Making $FILE_NAME.ttf..."
             fontforge -lang=ff -c "Open('$OTF');Generate('$OTF':r+'.ttf');Quit(0);" > /dev/null 2>&1
+
+            if [ $? -ne 0 ]; then
+                error "FontForge had an error making $FILE_NAME.ttf" "Check to make sure you have all the dependencies for antimony installed."
+                echo "${t_red}${t_bold}       https://github.com/sjhcockrell/antimony${t_reset}"
+                echo
+                exit 1
+            fi
+
             FLAG_KEEP_TTF=1
-            ok
+            success
+            echo
         ;;
 
         svg)
-            task "Making $FILE_NAME.svg"
-            task "(Adding id attribute of $FONT_ID_ATTR to <font> in SVG)"
+            echo "Making $FILE_NAME.svg..."
+            echo "Adding id attribute of $FONT_ID_ATTR to <font> in SVG..."
 
-            # If they don't want a TTF outputted, and one doesn't exist here, 
+            # If they don't want a TTF outputted, and one doesn't exist here,
             # we need to create one to export an eot.
-            if [ -z $FLAG_KEEP_TTF ] && [ ! -f $FILE_PATH/$FILE_NAME.ttf ]
-            then
+            if [ -z $FLAG_KEEP_TTF ] && [ ! -f $FILE_PATH/$FILE_NAME.ttf ]; then
                 fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.ttf');Quit(0);" > /dev/null 2>&1
             fi
 
             # Actually make the SVG file now...
             java -jar /usr/local/bin/batik.jar $FILE_PATH/$FILE_NAME.ttf -autorange -id $FONT_ID_ATTR -o $FILE_PATH/$FILE_NAME.svg 2>&1
 
+            if [ $? -ne 0 ]; then
+                error "batik.jar had an error making $FILE_NAME.svg" "Check to make sure you have all the dependencies for antimony installed."
+                echo "${t_red}${t_bold}       https://github.com/sjhcockrell/antimony${t_reset}"
+                echo
+                exit 1
+            fi
+
             # Cleanup any unwanted ttfs.
-            if [ -z $FLAG_KEEP_TTF ]
-            then
+            if [ -z $FLAG_KEEP_TTF ]; then
                 rm $FILE_PATH/$FILE_NAME.ttf 2>&1
             fi
-            ok
+            success
+            echo
         ;;
 
         eot)
-            task "Making $FILE_NAME.eot"
+            echo "Making $FILE_NAME.eot..."
 
-            # If they don't want a TTF outputted, and one doesn't exist here, 
+            # If they don't want a TTF outputted, and one doesn't exist here,
             # we need to create one to export an eot.
-            if [ -z $FLAG_KEEP_TTF ] && [ ! -f $FILE_PATH/$FILE_NAME.ttf ]
-            then
+            if [ -z $FLAG_KEEP_TTF ] && [ ! -f $FILE_PATH/$FILE_NAME.ttf ]; then
                 fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.ttf');Quit(0);" > /dev/null 2>&1
             fi
 
             ttf2eot < $FILE_PATH/$FILE_NAME.ttf > $FILE_PATH/$FILE_NAME.eot 2>&1
 
+            if [ $? -ne 0 ]; then
+                error "ttf2eot had an error making $FILE_PATH.eot" "Check to make sure you have all the dependencies for antimony installed."
+                echo "${t_red}${t_bold}       https://github.com/sjhcockrell/antimony${t_reset}"
+                echo
+                exit 1
+            fi
+
             # Cleanup any unwanted ttfs.
-            if [ -z $FLAG_KEEP_TTF ]
-            then
+            if [ -z $FLAG_KEEP_TTF ]; then
                 rm $FILE_PATH/$FILE_NAME.ttf 2>&1
             fi
-            ok
+            success
+            echo
         ;;
 
         woff)
-            task "Making $FILE_NAME.woff"
+            echo "Making $FILE_NAME.woff..."
             sfnt2woff $OTF > $FILE_PATH/$FILE_NAME.woff 2>&1
-            ok
+
+            if [ $? -ne 0 ]; then
+                error "sfnt2woff had an error making $FILE_NAME.woff" "Check to make sure you have all the dependencies for antimony installed."
+                echo "${t_red}${t_bold}       https://github.com/sjhcockrell/antimony${t_reset}"
+                echo
+                exit 1
+            fi
+
+            success
+            echo
         ;;
     esac
 done
 
 exit 0
+
+# }
+# =============================================================================
