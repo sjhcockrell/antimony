@@ -1,15 +1,9 @@
 #!/bin/bash
+#
+# antimony
+# A simple script that will generate 'ttf', 'eot', and 'woff'
+# font formats suitable for displaying webfonts.
 
-#  antimony
-#
-#  A simple script that will generate 'ttf', 'eot', and 'woff'
-#  font formats suitable for displaying webfonts.
-#
-#  I use it in conjunction with Glyphs Mini, which exports an
-#  'otf' font format, to create icon sets.
-#
-#  Named for Antimony (Sb), Atomic Number 51, a hardening
-#  element added to lead type to create sharp edges.
 
 
 # printInvalidOptionError
@@ -87,7 +81,6 @@ while getopts ":hf:c:" opt; do
         #   ex: svg,woff,eot,ttf
         f)
             FORMATS=$OPTARG
-
             if [[ $FORMATS == \-* ]] || [[ ! $FORMATS ]]; then
                 printRequiresArgumentError "$opt"
             fi
@@ -96,7 +89,6 @@ while getopts ":hf:c:" opt; do
         # Character Ranges
         c)
             CHARS=$OPTARG
-
             if [[ $CHARS == \-* ]] || [[ ! $CHARS ]]; then
                 printRequiresArgumentError "$opt"
             fi
@@ -133,11 +125,13 @@ OTF=$1
 # Check if a file argument has been provided.
 if [ ! -f $OTF ]; then
     error "Can't find that .otf file. Check your path?"
+    echo
+    exit 1
 fi
 
 # Check if the argument has the correct extension.
 if [[ $OTF != *.otf ]]; then
-    error "Antimony only works with *.otf files for now. Can't process this."
+    error "Antimony only works with *.otf files for now." "Quitting."
     echo
     exit 1
 fi
@@ -168,6 +162,7 @@ fi
 #
 echo
 echo "Building fonts"
+echo
 
 # Make a unique id attr that we can apply to the <font> el in the SVG file
 # from the first one-word component of the file name.
@@ -184,6 +179,13 @@ for format in ${FORMATS[@]}; do
         ttf)
             echo "Making $FILE_NAME.ttf"
             fontforge -lang=ff -c "Open('$OTF');Generate('$OTF':r+'.ttf');Quit(0);" > /dev/null 2>&1
+
+            if [ $? -ne 0 ]; then
+                error "FontForge had an error making $FILE_NAME.ttf" "Printing stack trace for debugging."
+                echo
+                exit 1
+            fi
+
             FLAG_KEEP_TTF=1
             success
         ;;
@@ -200,6 +202,12 @@ for format in ${FORMATS[@]}; do
 
             # Actually make the SVG file now...
             java -jar /usr/local/bin/batik.jar $FILE_PATH/$FILE_NAME.ttf -autorange -id $FONT_ID_ATTR -o $FILE_PATH/$FILE_NAME.svg 2>&1
+
+            if [ $? -ne 0 ]; then
+                error "batik.jar had an error making $FILE_NAME.svg"
+                echo
+                exit 1
+            fi
 
             # Cleanup any unwanted ttfs.
             if [ -z $FLAG_KEEP_TTF ]; then
@@ -219,6 +227,12 @@ for format in ${FORMATS[@]}; do
 
             ttf2eot < $FILE_PATH/$FILE_NAME.ttf > $FILE_PATH/$FILE_NAME.eot 2>&1
 
+            if [ $? -ne 0 ]; then
+                error "ttf2eot had an error making $FILE_PATH.eot"
+                echo
+                exit 1
+            fi
+
             # Cleanup any unwanted ttfs.
             if [ -z $FLAG_KEEP_TTF ]; then
                 rm $FILE_PATH/$FILE_NAME.ttf 2>&1
@@ -229,6 +243,13 @@ for format in ${FORMATS[@]}; do
         woff)
             echo "Making $FILE_NAME.woff"
             sfnt2woff $OTF > $FILE_PATH/$FILE_NAME.woff 2>&1
+
+            if [ $? -ne 0 ]; then
+                error "sfnt2woff had an error making $FILE_NAME.woff"
+                echo
+                exit 1
+            fi
+
             success
         ;;
     esac
