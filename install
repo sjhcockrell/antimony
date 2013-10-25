@@ -42,31 +42,43 @@ function getPackage {
 
     if [ $? -ne 0 ]; then
         echo "$(tput setaf 1)ERROR: Resource download failed for $1.$(tput sgr0)"
-        echo "       $(tput setaf 1)File an issue at https://github.com/sjhcockrell/antimony$(tput sgr0)"
+        echo "$(tput setaf 1)       File an issue at https://github.com/sjhcockrell/antimony$(tput sgr0)"
         exit 1
     fi
 
     # Unpacking
     echo "Unpacking..."
 
-    if [[ $filename =~ \.tar\.gz ]]; then
+    if [[ $filename =~ \.tar ]]; then
         local dirname=$(tar zft $filename | head -n1)
-        tar -xzf $filename
+        tar -xzf $filename > /dev/null 2>&1
 
     elif [[ $filename =~ \.zip ]]; then
         local dirname=${filename%.*}
-        unzip $filename -d $dirname
+        unzip $filename -d $dirname > /dev/null 2>&1
     fi
 
     # Make, if needs making
-    find $dirname/Makefile
-    if [[ $? == 0 ]]; then
+    if [ -e $dirname/Makefile ]; then
+        touch make.log
         cd $dirname
-        make
+        make > ../make.log 2>&1
+
+        #if [ $? == 0 ]; then
+        if [ $? -ne 0 ]; then
+            cd ../
+            echo "$(tput setaf 1)ERROR: \`make\` failed for $filename.$(tput sgr0)"
+            echo "$(tput setaf 1)       Printing stack trace for debugging.$(tput sgr0)"
+            echo "$(tput setaf 3)DEBUG TRACE:$(tput sgr0)"
+            echo "$(tput setaf 3)$(cat make.log)$(tput sgr0)"
+            rm $filename
+            exit 1
+        fi
+
         cd ../
+        rm make.log
     fi
 
-    echo "Already installed."
     # Clean up compressed origin file
     rm $filename
 
@@ -91,10 +103,10 @@ function installScriptRequirement {
     local url=$2
 
     echo "Checking for dependency $script..."
-    if [ ! -e /usr/local/bin/$script ]; then
+    if [ ! -e $INSTALL_DIR/$script ]; then
         echo "Installing dependency $script..."
         getPackage $url dir
-        cp $dir/$script /usr/local/bin/
+        cp $dir/$script $INSTALL_DIR/
         rm -rf $dir
     else
         echo "Already installed."
@@ -112,19 +124,27 @@ echo
 # install homebrew
 # This is in case you don't have wget, and we need to use brew
 # to install.
-if [ ! -e /usr/local/bin/brew ]; then
+if [ ! -e $INSTALL_DIR/brew ]; then
     echo "Homebrew is required for installing a few components."
     echo "Installing brew..."
     echo "(This may take a minute.)"
-    ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)"
+    ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)" > /dev/null 2>&1
+else
+    echo "Updating brew (just to be safe)..."
+    brew update > /dev/null 2>&1
+    echo "Updated."
+    echo "$(tput setaf 2)Success$(tput sgr0)"
+    echo
 fi
 
 # Make sure we have wget
-if [ ! -e /usr/local/bin/wget ]; then
+if [ ! -e $INSTALL_DIR/wget ]; then
     echo "wget is required."
     echo "Installing wget..."
     echo "(This may take a minute.)"
-    brew install wget
+    brew install wget > /dev/null 2>&1
+    echo "$(tput setaf 2)Success$(tput sgr0)"
+    echo
 fi
 
 # tputcolors
@@ -160,17 +180,40 @@ echo
 
 # fontforge
 echo "Checking for dependency fontforge..."
-if [ ! -e /usr/local/bin/fontforge ]; then
+if [ ! -e $INSTALL_DIR/fontforge ]; then
 
     echo "Installing dependency fontforge..."
-    brew install fontforge 2>&1
-    chmod 777 /usr/local/share 2>&1
-    brew link fontforge 2>&1
+    echo "(This will take a couple minutes. Go get some coffee.)"
+
+    # brew will occasionally freak out if this dir isn't chmodded.
+    chmod 777 /usr/local/share > /dev/null 2>&1
+
+    # libtiff can make brew freak out occasionally.
+    # Unlink and relink.
+    brew unlink libtiff > /dev/null 2>&1
+    brew link libtiff > /dev/null 2>&1
+
+    # Mac OS X gettext is compiled with a non-compatible with
+    # fontforge compiler. We'll remove and let fontforge install
+    # it for us.
+    brew remove gettext > /dev/null 2>&1
+
+    # fontconfig needs to be linked where it isn't.
+    brew link fontconfig > /dev/null 2>&1
+
+    # finally:
+    touch brew.log
+    brew install fontforge > brew.log 2>&1
 
     if [[ $? -ne 0 ]]; then
         error "'brew link fontforge' failed." "This probably means that something in /usr/local/ doesn't have the correct permissions"
+        echo "${t_yellow}DEBUG TRACE:${t_reset}"
+        echo "${t_yellow}$(cat brew.log)${t_reset}"
         exit
     fi
+
+    # cleanup
+    rm brew.log
 
 else
     echo "Already installed."
@@ -180,9 +223,8 @@ echo
 
 # antimony
 echo "Installing antimony..."
-if [ ! -e /usr/local/bin/antimony ]; then
-    echo "Installing antimony..."
-    cp antimony /usr/local/bin/
+if [ ! -e $INSTALL_DIR/antimony ]; then
+    cp antimony $INSTALL_DIR/
 else
     echo "Already installed."
 
@@ -192,10 +234,10 @@ else
     case $action in
             u )
                 printf "\nReplacing existing copy of antimony with this one...\n"
-                rm /usr/local/bin/antimony
-                cp antimony /usr/local/bin/
+                rm $INSTALL_DIR/antimony
+                cp antimony $INSTALL_DIR/
                 ;;
-            s )
+            * )
                 printf "\nSkipping.\n"
                 ;;
     esac
