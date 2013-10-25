@@ -66,6 +66,7 @@ function getPackage {
         cd ../
     fi
 
+    echo "Already installed."
     # Clean up compressed origin file
     rm $filename
 
@@ -90,8 +91,7 @@ function installScriptRequirement {
     local url=$2
 
     echo "Checking for dependency $script..."
-    find /usr/local/bin/$script > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
+    if [ ! -e /usr/local/bin/$script ]; then
         echo "Installing dependency $script..."
         getPackage $url dir
         cp $dir/$script /usr/local/bin/
@@ -105,11 +105,14 @@ function installScriptRequirement {
 # =============================================================================
 # {
 
+echo
+echo "$(tput bold)[Sb] Installing Antimony$(tput sgr0)"
+echo
+
 # install homebrew
 # This is in case you don't have wget, and we need to use brew
 # to install.
-which brew 2>&1
-if [[ $? -ne 0 ]]; then
+if [ ! -e /usr/local/bin/brew ]; then
     echo "Homebrew is required for installing a few components."
     echo "Installing brew..."
     echo "(This may take a minute.)"
@@ -117,8 +120,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 # Make sure we have wget
-which wget 2>&1
-if [[ $? -ne 0 ]]; then
+if [ ! -e /usr/local/bin/wget ]; then
     echo "wget is required."
     echo "Installing wget..."
     echo "(This may take a minute.)"
@@ -128,6 +130,16 @@ fi
 # tputcolors
 installScriptRequirement "tputcolors" $R_tputcolors
 source tputcolors
+success
+echo
+
+# Make sure we have Xcode and Xcode command line tools.
+echo "Checking for dependency Xcode..."
+if [ ! -e /Applications/Xcode.app ]; then
+    error "Xcode is required for installing a few components." "Try again after installing from ${t_bold}https://itunes.apple.com/us/app/xcode/id497799835"
+    exit 1
+fi
+echo "Already installed."
 success
 echo
 
@@ -148,8 +160,7 @@ echo
 
 # fontforge
 echo "Checking for dependency fontforge..."
-which fontforge > /dev/null 2>&1
-if [[ $? -ne 0 ]]; then
+if [ ! -e /usr/local/bin/fontforge ]; then
 
     echo "Installing dependency fontforge..."
     brew install fontforge 2>&1
@@ -169,8 +180,7 @@ echo
 
 # antimony
 echo "Installing antimony..."
-which antimony > /dev/null 2>&1
-if [[ $? -ne 0 ]]; then
+if [ ! -e /usr/local/bin/antimony ]; then
     echo "Installing antimony..."
     cp antimony /usr/local/bin/
 else
