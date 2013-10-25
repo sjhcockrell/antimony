@@ -196,7 +196,10 @@ if [ ! -e $INSTALL_DIR/fontforge ]; then
     # Mac OS X gettext is compiled with a non-compatible with
     # fontforge compiler. We'll remove and let fontforge install
     # it for us.
-    brew remove gettext
+    brew remove gettext > /dev/null 2>&1
+
+    # fontconfig needs to be linked where it isn't.
+    brew link fontconfig > /dev/null 2>&1
 
     # finally:
     touch brew.log
