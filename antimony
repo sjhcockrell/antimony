@@ -177,7 +177,8 @@ for format in ${FORMATS[@]}; do
             fontforge -lang=ff -c "Open('$OTF');Generate('$OTF':r+'.ttf');Quit(0);" > /dev/null 2>&1
 
             if [ $? -ne 0 ]; then
-                error "FontForge had an error making $FILE_NAME.ttf" "Printing stack trace for debugging."
+                error "FontForge had an error making $FILE_NAME.ttf" "Check to make sure you have all the dependencies for antimony installed."
+                echo "${t_red}${t_bold}       https://github.com/sjhcockrell/antimony${t_reset}"
                 echo
                 exit 1
             fi
@@ -201,7 +202,8 @@ for format in ${FORMATS[@]}; do
             java -jar /usr/local/bin/batik.jar $FILE_PATH/$FILE_NAME.ttf -autorange -id $FONT_ID_ATTR -o $FILE_PATH/$FILE_NAME.svg 2>&1
 
             if [ $? -ne 0 ]; then
-                error "batik.jar had an error making $FILE_NAME.svg"
+                error "batik.jar had an error making $FILE_NAME.svg" "Check to make sure you have all the dependencies for antimony installed."
+                echo "${t_red}${t_bold}       https://github.com/sjhcockrell/antimony${t_reset}"
                 echo
                 exit 1
             fi
@@ -226,7 +228,8 @@ for format in ${FORMATS[@]}; do
             ttf2eot < $FILE_PATH/$FILE_NAME.ttf > $FILE_PATH/$FILE_NAME.eot 2>&1
 
             if [ $? -ne 0 ]; then
-                error "ttf2eot had an error making $FILE_PATH.eot"
+                error "ttf2eot had an error making $FILE_PATH.eot" "Check to make sure you have all the dependencies for antimony installed."
+                echo "${t_red}${t_bold}       https://github.com/sjhcockrell/antimony${t_reset}"
                 echo
                 exit 1
             fi
@@ -244,7 +247,8 @@ for format in ${FORMATS[@]}; do
             sfnt2woff $OTF > $FILE_PATH/$FILE_NAME.woff 2>&1
 
             if [ $? -ne 0 ]; then
-                error "sfnt2woff had an error making $FILE_NAME.woff"
+                error "sfnt2woff had an error making $FILE_NAME.woff" "Check to make sure you have all the dependencies for antimony installed."
+                echo "${t_red}${t_bold}       https://github.com/sjhcockrell/antimony${t_reset}"
                 echo
                 exit 1
             fi
