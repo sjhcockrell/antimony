@@ -12,9 +12,6 @@
 #  element added to lead type to create sharp edges.
 
 
-# VARIABLES
-
-
 # printInvalidOptionError
 #   Prints generic message about a bad arg.
 #
@@ -76,8 +73,7 @@ if [[ $# == 0 ]]; then
 fi
 
 # Process arguments.
-while getopts ":hf:c:" opt 
-do
+while getopts ":hf:c:" opt; do
     case $opt in
 
         # Print help
@@ -92,8 +88,7 @@ do
         f)
             FORMATS=$OPTARG
 
-            if [[ $FORMATS == \-* ]] || [[ ! $FORMATS ]] 
-            then
+            if [[ $FORMATS == \-* ]] || [[ ! $FORMATS ]]; then
                 printRequiresArgumentError "$opt"
             fi
         ;;
@@ -102,8 +97,7 @@ do
         c)
             CHARS=$OPTARG
 
-            if [[ $CHARS == \-* ]] || [[ ! $CHARS ]]
-            then
+            if [[ $CHARS == \-* ]] || [[ ! $CHARS ]]; then
                 printRequiresArgumentError "$opt"
             fi
         ;;
@@ -137,16 +131,15 @@ shift $((OPTIND-1))
 OTF=$1
 
 # Check if a file argument has been provided.
-if [ ! -f $OTF ]
-then
+if [ ! -f $OTF ]; then
     error "Can't find that .otf file. Check your path?"
 fi
 
 # Check if the argument has the correct extension.
-if [[ $OTF != *.otf ]]
-then
-    error "Antimony only works with *.otf files for now. :("
-	exit 1
+if [[ $OTF != *.otf ]]; then
+    error "Antimony only works with *.otf files for now. Can't process this."
+    echo
+    exit 1
 fi
 
 FILE_PATH=`dirname $OTF`
@@ -156,11 +149,9 @@ FILE_NAME=`basename $OTF .otf`
 # Split formats into an array.
 # IF    : formats exists, split into array.
 # ELSE  : default to building all.
-if [ -z $FORMATS ]
-then
+if [ -z $FORMATS ]; then
     echo "Formats is empty, build all."
     FORMATS=('ttf' 'svg' 'woff' 'eot')
-
 else
     STRING=$FORMATS
     IFS=',', read -ra FORMATS <<< "$STRING"
@@ -175,7 +166,8 @@ fi
 # See:
 # http://fontforge.org/scripting.html
 #
-echo "\nBuilding fonts"
+echo
+echo "Building fonts"
 
 # Make a unique id attr that we can apply to the <font> el in the SVG file
 # from the first one-word component of the file name.
@@ -187,8 +179,7 @@ TMP=`echo $FILE_NAME | sed -e 's/_/-/g' -e 's/ /-/g'`
 TMP=(${TMP//-/ })
 FONT_ID_ATTR=${TMP[0]}
 
-for format in ${FORMATS[@]}
-do
+for format in ${FORMATS[@]}; do
     case $format in
         ttf)
             echo "Making $FILE_NAME.ttf"
@@ -201,10 +192,9 @@ do
             echo "Making $FILE_NAME.svg"
             echo "(Adding id attribute of $FONT_ID_ATTR to <font> in SVG)"
 
-            # If they don't want a TTF outputted, and one doesn't exist here, 
+            # If they don't want a TTF outputted, and one doesn't exist here,
             # we need to create one to export an eot.
-            if [ -z $FLAG_KEEP_TTF ] && [ ! -f $FILE_PATH/$FILE_NAME.ttf ]
-            then
+            if [ -z $FLAG_KEEP_TTF ] && [ ! -f $FILE_PATH/$FILE_NAME.ttf ]; then
                 fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.ttf');Quit(0);" > /dev/null 2>&1
             fi
 
@@ -212,8 +202,7 @@ do
             java -jar /usr/local/bin/batik.jar $FILE_PATH/$FILE_NAME.ttf -autorange -id $FONT_ID_ATTR -o $FILE_PATH/$FILE_NAME.svg 2>&1
 
             # Cleanup any unwanted ttfs.
-            if [ -z $FLAG_KEEP_TTF ]
-            then
+            if [ -z $FLAG_KEEP_TTF ]; then
                 rm $FILE_PATH/$FILE_NAME.ttf 2>&1
             fi
             success
@@ -222,18 +211,16 @@ do
         eot)
             echo "Making $FILE_NAME.eot"
 
-            # If they don't want a TTF outputted, and one doesn't exist here, 
+            # If they don't want a TTF outputted, and one doesn't exist here,
             # we need to create one to export an eot.
-            if [ -z $FLAG_KEEP_TTF ] && [ ! -f $FILE_PATH/$FILE_NAME.ttf ]
-            then
+            if [ -z $FLAG_KEEP_TTF ] && [ ! -f $FILE_PATH/$FILE_NAME.ttf ]; then
                 fontforge -lang=ff -c "Open('$1');Generate('$1':r+'.ttf');Quit(0);" > /dev/null 2>&1
             fi
 
             ttf2eot < $FILE_PATH/$FILE_NAME.ttf > $FILE_PATH/$FILE_NAME.eot 2>&1
 
             # Cleanup any unwanted ttfs.
-            if [ -z $FLAG_KEEP_TTF ]
-            then
+            if [ -z $FLAG_KEEP_TTF ]; then
                 rm $FILE_PATH/$FILE_NAME.ttf 2>&1
             fi
             success
