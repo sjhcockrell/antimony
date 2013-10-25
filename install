@@ -103,10 +103,10 @@ function installScriptRequirement {
     local url=$2
 
     echo "Checking for dependency $script..."
-    if [ ! -e /usr/local/bin/$script ]; then
+    if [ ! -e $INSTALL_DIR/$script ]; then
         echo "Installing dependency $script..."
         getPackage $url dir
-        cp $dir/$script /usr/local/bin/
+        cp $dir/$script $INSTALL_DIR/
         rm -rf $dir
     else
         echo "Already installed."
@@ -124,7 +124,7 @@ echo
 # install homebrew
 # This is in case you don't have wget, and we need to use brew
 # to install.
-if [ ! -e /usr/local/bin/brew ]; then
+if [ ! -e $INSTALL_DIR/brew ]; then
     echo "Homebrew is required for installing a few components."
     echo "Installing brew..."
     echo "(This may take a minute.)"
@@ -137,7 +137,7 @@ else
 fi
 
 # Make sure we have wget
-if [ ! -e /usr/local/bin/wget ]; then
+if [ ! -e $INSTALL_DIR/wget ]; then
     echo "wget is required."
     echo "Installing wget..."
     echo "(This may take a minute.)"
@@ -179,7 +179,7 @@ echo
 
 # fontforge
 echo "Checking for dependency fontforge..."
-if [ ! -e /usr/local/bin/fontforge ]; then
+if [ ! -e $INSTALL_DIR/fontforge ]; then
 
     echo "Installing dependency fontforge..."
     brew install fontforge 2>&1
@@ -199,9 +199,9 @@ echo
 
 # antimony
 echo "Installing antimony..."
-if [ ! -e /usr/local/bin/antimony ]; then
+if [ ! -e $INSTALL_DIR/antimony ]; then
     echo "Installing antimony..."
-    cp antimony /usr/local/bin/
+    cp antimony $INSTALL_DIR/
 else
     echo "Already installed."
 
@@ -211,8 +211,8 @@ else
     case $action in
             u )
                 printf "\nReplacing existing copy of antimony with this one...\n"
-                rm /usr/local/bin/antimony
-                cp antimony /usr/local/bin/
+                rm $INSTALL_DIR/antimony
+                cp antimony $INSTALL_DIR/
                 ;;
             * )
                 printf "\nSkipping.\n"
