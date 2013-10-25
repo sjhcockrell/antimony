@@ -1,68 +1,16 @@
 #!/bin/bash
 
-#  antimony 
+#  antimony
 #
 #  A simple script that will generate 'ttf', 'eot', and 'woff'
-#  font formats suitable for displaying webfonts. 
+#  font formats suitable for displaying webfonts.
 #
-#  I use it in conjunction with Glyphs Mini, which exports an 
+#  I use it in conjunction with Glyphs Mini, which exports an
 #  'otf' font format, to create icon sets.
 #
 #  Named for Antimony (Sb), Atomic Number 51, a hardening
 #  element added to lead type to create sharp edges.
 
-# oh my, the colours
-NORMAL=$(tput sgr0)
-BOLD=$(tput bold)
-UNDERLINE=$(tput smul)
-RED=$(tput setaf 1)
-GREEN=$(tput setaf 2)
-YELLOW=$(tput setaf 3)
-
-indent () {
-    i=$1 
-    while [ $i -gt 0 ]
-    do
-        printf "    "
-        i=$(( $i - 1 ))
-    done
-}
-
-title () {
-    printf "\n${BOLD}$1${NORMAL}\n"
-}
-
-subtitle () {
-    printf "${UNDERLINE}$1${NORMAL}\n"
-}
-
-task () {
-    indent 1
-    printf "$1...\n"
-}
-
-line () {
-    printf -- "$1\n"
-}
-
-ok () {
-    indent 1
-    printf "${GREEN}Okay${NORMAL}\n\n"
-}
-
-debug () {
-    printf "${YELLOW}Debug:${NORMAL}  $1\n"
-}
-
-# Unlike error, warning will allow processing to continue.
-warn () {
-    printf "${RED}${UNDERlINE}Warning:${NORMAL} $1\n\n"
-}
-
-error () {
-    printf "${RED}${UNDERLINE}Error:${NORMAL}  $1\n\n"
-    exit 1
-}
 
 invalid_option_error () {
     printf "${RED}${UNDERLINE}Error:${NORMAL}  Invalid option ${BOLD}-$1${NORMAL}.\n"
@@ -84,28 +32,25 @@ requires_argument_error () {
 # Invoked when `antimony` called without arguments,
 # or when a suppied with `--help` or `-h` flags.
 usage () {
-    title "Simple command line font conversion."
-    line "\nusage: antimony [-f font_formats] [-c unicode_charactter_range] font.otf\n"
+    echo "Simple command line font conversion."
+    echo "\nusage: antimony [-f font_formats] [-c unicode_charactter_range] font.otf\n"
 
-    line "-f [ttf,svg,eot,woff]"
-    indent 1
-    line "Format. Accepts a comma-separated list of file formats to export."
+    echo "-f [ttf,svg,eot,woff]"
+    echo "Format. Accepts a comma-separated list of file formats to export."
     printf "\n"
 
-    #line "-c [unicode-unicode]"
-    #indent 1
-    #line "Characters. Accepts a range of unicode characters to be include."
+    #echo "-c [unicode-unicode]"
+    #echo "Characters. Accepts a range of unicode characters to be include."
     
-    line "-h"
-    indent 1
-    line "Help. Prints this menu."
+    echo "-h"
+    echo "Help. Prints this menu."
     printf "\n"
 
     exit 2
 }
 # } 
 
-title "[Sb] Antimony"
+echo "[Sb] Antimony"
 
 OTF=
 OTF_PATH=
@@ -154,7 +99,7 @@ do
 
         # End of arguments.
         --)
-            debug "end of arguments."
+            echo "end of arguments."
             break
         ;;
 
@@ -202,7 +147,7 @@ FILE_NAME=`basename $OTF .otf`
 # ELSE  : default to building all.
 if [ -z $FORMATS ]
 then
-    debug "Formats is empty, build all."
+    echo "Formats is empty, build all."
     FORMATS=('ttf' 'svg' 'woff' 'eot')
 
 else
@@ -219,7 +164,7 @@ fi
 # See:
 # http://fontforge.org/scripting.html
 #
-subtitle "\nBuilding fonts"
+echo "\nBuilding fonts"
 
 # Make a unique id attr that we can apply to the <font> el in the SVG file
 # from the first one-word component of the file name.
@@ -235,15 +180,15 @@ for format in ${FORMATS[@]}
 do
     case $format in
         ttf)
-            task "Making $FILE_NAME.ttf"
+            echo "Making $FILE_NAME.ttf"
             fontforge -lang=ff -c "Open('$OTF');Generate('$OTF':r+'.ttf');Quit(0);" > /dev/null 2>&1
             FLAG_KEEP_TTF=1
-            ok
+            success
         ;;
 
         svg)
-            task "Making $FILE_NAME.svg"
-            task "(Adding id attribute of $FONT_ID_ATTR to <font> in SVG)"
+            echo "Making $FILE_NAME.svg"
+            echo "(Adding id attribute of $FONT_ID_ATTR to <font> in SVG)"
 
             # If they don't want a TTF outputted, and one doesn't exist here, 
             # we need to create one to export an eot.
@@ -260,11 +205,11 @@ do
             then
                 rm $FILE_PATH/$FILE_NAME.ttf 2>&1
             fi
-            ok
+            success
         ;;
 
         eot)
-            task "Making $FILE_NAME.eot"
+            echo "Making $FILE_NAME.eot"
 
             # If they don't want a TTF outputted, and one doesn't exist here, 
             # we need to create one to export an eot.
@@ -280,13 +225,13 @@ do
             then
                 rm $FILE_PATH/$FILE_NAME.ttf 2>&1
             fi
-            ok
+            success
         ;;
 
         woff)
-            task "Making $FILE_NAME.woff"
+            echo "Making $FILE_NAME.woff"
             sfnt2woff $OTF > $FILE_PATH/$FILE_NAME.woff 2>&1
-            ok
+            success
         ;;
     esac
 done
