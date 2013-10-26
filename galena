@@ -1,0 +1,56 @@
+#!/bin/bash
+#
+# galena
+# A helper script to antimony, which, when given a CSS file with @font-face
+# and a directory of font files, will base64 and inline svg, woff, and ttf
+# components.
+
+# VARIABLES
+
+
+
+# usage
+#   Prints usage information. Fn called when galena invoked without args,
+#   or when `-h` flag provided.
+#
+function usage {
+    echo "usage: galena -f <font path and basename> -c <css file with @font-face>"
+    echo
+    echo "  -f <font directory>"
+    echo "     Path to where the font assets live. If you want to encode a font"
+    echo "     called Open-San.* and it lives in a folder called 'fonts', you'd"
+    echo "     pass in 'fonts/Open-Sans'."
+    echo
+    echo "  -c <css file with @font-face>"
+    echo "     Path to a css file that has the @font-face rule where you want to"
+    echo "     put the base64 encoded strings."
+    echo
+    echo "  -h"
+    echo "     Help. Prints this menu."
+    echo
+    exit 2
+}
+
+# =============================================================================
+# {
+
+source /usr/local/bin/tputcolors
+
+echo
+echo "${t_white}${t_bold}[Pb] Galena${t_reset}"
+
+if [[ $# == 0 ]]; then
+    usage
+fi
+
+
+
+# TODO
+# parse arguments
+# if -h, print help
+# if no -f, fail
+# if no -c, fail
+
+
+# }
+# =============================================================================
