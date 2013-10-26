@@ -5,8 +5,6 @@
 # and a directory of font files, will base64 and inline svg, woff, and ttf
 # components.
 
-# VARIABLES
-
 
 
 # usage
@@ -14,23 +12,38 @@
 #   or when `-h` flag provided.
 #
 function usage {
-    echo "usage: galena -f <font path and basename> -c <css file with @font-face>"
+    echo "usage: galena -f <font name> -p <font path> <css file with @font-face>"
     echo
-    echo "  -f <font directory>"
-    echo "     Path to where the font assets live. If you want to encode a font"
-    echo "     called Open-San.* and it lives in a folder called 'fonts', you'd"
-    echo "     pass in 'fonts/Open-Sans'."
-    echo
-    echo "  -c <css file with @font-face>"
+    echo "     ${t_white}${t_bold}<css file with @font-face>${t_reset}"
     echo "     Path to a css file that has the @font-face rule where you want to"
     echo "     put the base64 encoded strings."
     echo
-    echo "  -h"
+    echo "  ${t_white}${t_bold}-f <font files>${t_reset}"
+    echo "     Font file (including path) that you would like to be base 64"
+    echo "     encoded. If you want to serialize multiple formats, separate files"
+    echo "     with a commas and no spaces (eg. font.woff,font.ttf)."
+    echo
+    echo "  ${t_white}${t_bold}-h${t_reset}"
     echo "     Help. Prints this menu."
     echo
     exit 2
 }
 
+# printInvalidOptionError
+# Prints generic message about a bad arg.
+function printInvalidOptionError {
+    error "Invalid option \`$1\'" "See \`antimony --help\` for usage."
+    echo
+    exit 1
+}
+
+# printRequiresArgumentError
+# Prints generic message about a flag needing an arg.
+function printRequiresArgumentError {
+    error "Option -$1 requires an argument." "See \`antimony --help\` for usage."
+    echo
+    exit 1
+}
 # =============================================================================
 # {
 
@@ -38,17 +51,75 @@ source /usr/local/bin/tputcolors
 
 echo
 echo "${t_white}${t_bold}[Pb] Galena${t_reset}"
+echo
 
+# no args, print usage.
 if [[ $# == 0 ]]; then
     usage
 fi
 
+# process args.
+while getopts ":hf:" opt; do
+    case $opt in
+
+        # help
+        h)
+            usage
+        ;;
+
+        # fonts
+        f)
+            fonts_csv=$OPTARG
+            ;;
+
+        # end of args
+        --)
+            break
+            ;;
+
+        # invalid argument.
+        # Since the agrument turns into a `?` during processing,
+        # getting the failed flag requires calling $OPTARG.
+        \?)
+            printInvalidOptionError "$OPTARG"
+            ;;
+
+        # option requires arg.
+        :)
+            printRequiresArgumentError "$OPTARG"
+            ;;
+
+    esac
+done
+
+shift $((OPTIND-1))
+
+css_file=$1
+
+# check to make sure CSS file exists.
+if [ ! -f $css_file ]; then
+    error "Can't find the target sass/css file. Check the path?"
+    echo
+    exit 1
+fi
+
+# check to make sure css has an @font-face declaration inside.
+grep '@font-face' $css_file > /dev/null 2>&1
+if [[ $? -ne 0 ]]; then
+    error "$css_file doesn't seem to have an @font-face declaration." \
+        "Galena could serialize the fonts, but wouldn't have anywhere to put them."
+    echo
+    exit 1
+fi
+
+
+exit 0
 
 
 # TODO
-# parse arguments
 # if -h, print help
 # if no -f, fail
+# if no -p, fail
 # if no -c, fail
 
 
