@@ -44,6 +44,42 @@ function printRequiresArgumentError {
     echo
     exit 1
 }
+
+# getMimeType
+#   @param $1 : font file extension.
+#   @param $2 : return variable
+#   @returns  : appropriate mime type
+function getMimeType {
+
+    local __result=$2
+    local font=$(basename $1)
+    local font_ext=${font##*.}
+
+    case $font_ext in
+        otf)
+            local mime="font/opentype"
+            ;;
+        woff)
+            local mime="application/font-woff"
+            ;;
+        ttf)
+            local mime="application/octet-stream"
+            ;;
+        svg)
+            local mime="image/svg+xml"
+            ;;
+        eot)
+            local mime="application/vnd.ms-fontobject"
+            ;;
+        *)
+            local mime="unknown"
+            ;;
+    esac
+
+    # return
+    eval $__result="'$mime'"
+}
+
 # =============================================================================
 # {
 
@@ -112,15 +148,39 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
+# for each font, encode and insert.
+IFS=',', read -ra fonts <<< "$fonts_csv"
+for font in ${fonts[@]}; do
+    echo "Generating data:uri for $font..."
 
-exit 0
+    # figure out file type, and figure out the correct mime type for
+    # the data:uri schema.
+    # NOTE: `file --mime-type` does not quite do what we want, so we have
+    # to get more specific.
+    getMimeType $font mime_type
+
+    echo $mime_type
+
+    if [[ $mime_type == 'unknown' ]]; then
+        echo "$font has an unknown font type."
+        echo "Skipping..."
+        continue
+    elif [[ $mime_type == 'application/vnd.ms-fontobject' ]]; then
+        echo "${t_white}${t_bold}WARNING:${t_reset} data:uris are unsupported by IE 6-7, which use .eot fonts."
+        echo "          Use at your own risk."
+    fi
 
 
-# TODO
-# if -h, print help
-# if no -f, fail
-# if no -p, fail
-# if no -c, fail
+
+    # TODO
+    # - figure out the file extension
+    # - figure out appropriate font encoding type (eg. application/x-font-woff)
+    # - generate b64 encoded version.
+    # - grep for url() line with the matching file extension
+    # - pipe into sed to strip everything between parens
+    # - insert b64 encoding
+
+done
 
 
 # }
