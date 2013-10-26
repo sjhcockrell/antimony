@@ -221,6 +221,27 @@ fi
 success
 echo
 
+# galena
+echo "Installing galena..."
+if [ ! -e $INSTALL_DIR/galena ]; then
+    cp galena $INSTALL_DIR/
+else
+    echo "Already installed."
+    # Prompt for what to do
+    printf "${t_yellow}Options: [u]pdate or [s]kip? ${t_reset}"
+    read -n 1 action
+    case $action in
+        u)
+            printf "\nReplacing existing copy of antimony with this one...\n"
+            rm $INSTALL_DIR/galena
+            cp galena $INSTALL_DIR/
+            ;;
+        *)
+            printf "\nSkipping.\n"
+            ;;
+    esac
+fi
+
 # antimony
 echo "Installing antimony..."
 if [ ! -e $INSTALL_DIR/antimony ]; then
@@ -232,14 +253,14 @@ else
     printf "${t_yellow}Options: [u]pdate or [s]kip? ${t_reset}"
     read -n 1 action
     case $action in
-            u )
-                printf "\nReplacing existing copy of antimony with this one...\n"
-                rm $INSTALL_DIR/antimony
-                cp antimony $INSTALL_DIR/
-                ;;
-            * )
-                printf "\nSkipping.\n"
-                ;;
+        u)
+            printf "\nReplacing existing copy of antimony with this one...\n"
+            rm $INSTALL_DIR/antimony
+            cp antimony $INSTALL_DIR/
+            ;;
+        *)
+            printf "\nSkipping.\n"
+            ;;
     esac
 
 fi
