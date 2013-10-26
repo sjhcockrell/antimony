@@ -45,39 +45,59 @@ function printRequiresArgumentError {
     exit 1
 }
 
-# getMimeType
-#   @param $1 : font file extension.
-#   @param $2 : return variable
-#   @returns  : appropriate mime type
-function getMimeType {
+# getMimeAndFormatType
+#   @param $1 : font file path
+#   @param $2 : return variable for mime type
+#   @param $3 : return variable for format type
+#   @returns  : {String} appropriate mime type, {String} appropriate format type
+function getMimeAndFormatType {
 
-    local __result=$2
+    local __result1=$2
+    local __result2=$3
     local font=$(basename $1)
     local font_ext=${font##*.}
 
     case $font_ext in
         otf)
             local mime="font/opentype"
+            local format="opentype"
             ;;
         woff)
             local mime="application/font-woff"
+            local format="woff"
             ;;
         ttf)
             local mime="application/octet-stream"
+            local format="ttf"
             ;;
         svg)
             local mime="image/svg+xml"
+            local format="svg"
             ;;
         eot)
             local mime="application/vnd.ms-fontobject"
+            local format="embedded-opentype"
             ;;
         *)
             local mime="unknown"
+            local format="unknown"
             ;;
     esac
 
     # return
-    eval $__result="'$mime'"
+    eval $__result1="'$mime'"
+    eval $__result2="'$format'"
+}
+
+# getFormatType
+#   @param $1 : font file path
+#   @param $2 : return variable
+#   @returns  : {String} appropriate CSS format type for @font-face.
+function getFormatType {
+
+    local __result=$2
+    local font=$(basename $1)
+    local font_
 }
 
 # =============================================================================
@@ -153,34 +173,41 @@ IFS=',', read -ra fonts <<< "$fonts_csv"
 for font in ${fonts[@]}; do
     echo "Generating data:uri for $font..."
 
+    # generate base64 encoding
+    echo "Encoding in base64..."
+    base64=$(base64 $font)
+
     # figure out file type, and figure out the correct mime type for
     # the data:uri schema.
     # NOTE: `file --mime-type` does not quite do what we want, so we have
     # to get more specific.
-    getMimeType $font mime_type
-
-    echo $mime_type
+    echo "Getting mime type..."
+    getMimeAndFormatType $font mime_type format_type
 
     if [[ $mime_type == 'unknown' ]]; then
         echo "$font has an unknown font type."
         echo "Skipping..."
         continue
+
     elif [[ $mime_type == 'application/vnd.ms-fontobject' ]]; then
         echo "${t_white}${t_bold}WARNING:${t_reset} data:uris are unsupported by IE 6-7, which use .eot fonts."
         echo "          Use at your own risk."
+
     fi
 
+    # Inserting
+    echo "Inserting base64..."
 
+    sed 's#url(.*).*format(\"'$format_type'\")#url(data:'$mime_type';base64,'$base64') format(\"'$format_type'\")#g' < $css_file > tmp
 
-    # TODO
-    # - figure out the file extension
-    # - figure out appropriate font encoding type (eg. application/x-font-woff)
-    # - generate b64 encoded version.
-    # - grep for url() line with the matching file extension
-    # - pipe into sed to strip everything between parens
-    # - insert b64 encoding
+    mv tmp $css_file
+
+    success
+    echo
 
 done
+success "Complete."
+echo
 
 
 # }
