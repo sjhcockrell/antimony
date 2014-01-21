@@ -198,7 +198,8 @@ for font in ${fonts[@]}; do
     # Inserting
     echo "Inserting base64..."
 
-    sed 's#url(.*).*format(\"'$format_type'\")#url(data:'$mime_type';base64,'$base64') format(\"'$format_type'\")#g' < $css_file > tmp
+    # NOTE: using `@` as the sed delimiter.
+    sed "s@url\(.*\).*format([\"\']"$format_type"[\"\'])@url\(data:"$mime_type";base64,"$base64"\) format\(\""$format_type"\"\)@g" < $css_file > tmp
 
     mv tmp $css_file
 
