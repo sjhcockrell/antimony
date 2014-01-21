@@ -12,7 +12,7 @@
 #   or when `-h` flag provided.
 #
 function usage {
-    echo "usage: galena -f <font name> -p <font path> <css file with @font-face>"
+    echo "usage: galena -f <font name> <css file with @font-face>"
     echo
     echo "     ${t_white}${t_bold}<css file with @font-face>${t_reset}"
     echo "     Path to a css file that has the @font-face rule where you want to"
