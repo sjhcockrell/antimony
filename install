@@ -128,7 +128,7 @@ if [ ! -e $INSTALL_DIR/brew ]; then
     echo "Homebrew is required for installing a few components."
     echo "Installing brew..."
     echo "(This may take a minute.)"
-    ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)" > /dev/null 2>&1
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" > /dev/null 2>&1
 else
     echo "Updating brew (just to be safe)..."
     brew update > /dev/null 2>&1
