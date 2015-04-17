@@ -5,8 +5,8 @@
 
 
 # REQUIREMENTS
-R_tputcolors="https://github.com/sjhcockrell/tputcolors/archive/1.0.tar.gz"		# bash coloring
-R_apacheBatik="https://github.com/sjhcockrell/Apache-Batik-1.7/archive/1.7.tar.gz" # .ttf => .svg
+R_tputcolors="https://codeload.github.com/sjhcockrell/tputcolors/tar.gz/1.0"		# bash coloring
+R_apacheBatik="https://codeload.github.com/sjhcockrell/Apache-Batik-1.7/tar.gz/1.7" # .ttf => .svg
 R_ttf2eot="http://ttf2eot.googlecode.com/files/ttf2eot-0.0.2-2.tar.gz"			 # .ttf => .eot
 R_sfnt2woff="http://people.mozilla.org/~jkew/woff/woff-code-latest.zip"			# .ttf => .woff
 
