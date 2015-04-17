@@ -5,10 +5,10 @@
 
 
 # REQUIREMENTS
-R_tputcolors="https://github.com/sjhcockrell/tputcolors/archive/1.0.tar.gz"        # bash coloring
-R_apacheBatik="https://github.com/sjhcockrell/Apache-Batik-1.7/archive/1.7.tar.gz" # .ttf => .svg
-R_ttf2eot="http://ttf2eot.googlecode.com/files/ttf2eot-0.0.2-2.tar.gz"             # .ttf => .eot
-R_sfnt2woff="http://people.mozilla.org/~jkew/woff/woff-code-latest.zip"            # .ttf => .woff
+R_tputcolors="https://codeload.github.com/sjhcockrell/tputcolors/tar.gz/1.0"		# bash coloring
+R_apacheBatik="https://codeload.github.com/sjhcockrell/Apache-Batik-1.7/tar.gz/1.7" # .ttf => .svg
+R_ttf2eot="http://ttf2eot.googlecode.com/files/ttf2eot-0.0.2-2.tar.gz"			 # .ttf => .eot
+R_sfnt2woff="http://people.mozilla.org/~jkew/woff/woff-code-latest.zip"			# .ttf => .woff
 
 DIR_TTF="ttf2eot"
 DIR_SFNT="woff"
@@ -27,63 +27,63 @@ PROJECT_URL="https://github.com/sjhcockrell/antimony"
 #
 function getPackage {
 
-    if [[ $# -ne 2 ]]; then
-        echo "$(tput setaf 1)ERROR: getPackage() requires a URL as an argument and a variable name.$(tput sgr0)"
-        exit 1
-    fi
+	if [[ $# -ne 2 ]]; then
+		echo "$(tput setaf 1)ERROR: getPackage() requires a URL as an argument and a variable name.$(tput sgr0)"
+		exit 1
+	fi
 
-    local url=$1
-    local __result=$2
-    local filename=$(basename $url)
+	local url=$1
+	local __result=$2
+	local filename=$(basename $url)
 
-    # Downloading
-    echo "Downloading $filename..."
-    wget $1 > /dev/null 2>&1
+	# Downloading
+	echo "Downloading $filename..."
+	wget $1 > /dev/null 2>&1
 
-    if [ $? -ne 0 ]; then
-        echo "$(tput setaf 1)ERROR: Resource download failed for $1.$(tput sgr0)"
-        echo "$(tput setaf 1)       File an issue at https://github.com/sjhcockrell/antimony$(tput sgr0)"
-        exit 1
-    fi
+	if [ $? -ne 0 ]; then
+		echo "$(tput setaf 1)ERROR: Resource download failed for $1.$(tput sgr0)"
+		echo "$(tput setaf 1)	   File an issue at https://github.com/sjhcockrell/antimony$(tput sgr0)"
+		exit 1
+	fi
 
-    # Unpacking
-    echo "Unpacking..."
+	# Unpacking
+	echo "Unpacking..."
 
-    if [[ $filename =~ \.tar ]]; then
-        local dirname=$(tar zft $filename | head -n1)
-        tar -xzf $filename > /dev/null 2>&1
+	if [[ $filename =~ \.tar ]]; then
+		local dirname=$(tar zft $filename | head -n1)
+		tar -xzf $filename > /dev/null 2>&1
 
-    elif [[ $filename =~ \.zip ]]; then
-        local dirname=${filename%.*}
-        unzip $filename -d $dirname > /dev/null 2>&1
-    fi
+	elif [[ $filename =~ \.zip ]]; then
+		local dirname=${filename%.*}
+		unzip $filename -d $dirname > /dev/null 2>&1
+	fi
 
-    # Make, if needs making
-    if [ -e $dirname/Makefile ]; then
-        touch make.log
-        cd $dirname
-        make > ../make.log 2>&1
+	# Make, if needs making
+	if [ -e $dirname/Makefile ]; then
+		touch make.log
+		cd $dirname
+		make > ../make.log 2>&1
 
-        #if [ $? == 0 ]; then
-        if [ $? -ne 0 ]; then
-            cd ../
-            echo "$(tput setaf 1)ERROR: \`make\` failed for $filename.$(tput sgr0)"
-            echo "$(tput setaf 1)       Printing stack trace for debugging.$(tput sgr0)"
-            echo "$(tput setaf 3)DEBUG TRACE:$(tput sgr0)"
-            echo "$(tput setaf 3)$(cat make.log)$(tput sgr0)"
-            rm $filename
-            exit 1
-        fi
+		#if [ $? == 0 ]; then
+		if [ $? -ne 0 ]; then
+			cd ../
+			echo "$(tput setaf 1)ERROR: \`make\` failed for $filename.$(tput sgr0)"
+			echo "$(tput setaf 1)	   Printing stack trace for debugging.$(tput sgr0)"
+			echo "$(tput setaf 3)DEBUG TRACE:$(tput sgr0)"
+			echo "$(tput setaf 3)$(cat make.log)$(tput sgr0)"
+			rm $filename
+			exit 1
+		fi
 
-        cd ../
-        rm make.log
-    fi
+		cd ../
+		rm make.log
+	fi
 
-    # Clean up compressed origin file
-    rm $filename
+	# Clean up compressed origin file
+	rm $filename
 
-    # Return variable populated with dirname
-    eval $__result="'$dirname'"
+	# Return variable populated with dirname
+	eval $__result="'$dirname'"
 }
 
 # installScriptRequirement
@@ -94,23 +94,23 @@ function getPackage {
 #
 function installScriptRequirement {
 
-    if [[ $# -ne 2 ]]; then
-        echo "$(tput setaf 1)ERROR: installScriptRequirement() requires a script name and URL.$(tput sgr0)"
-        exit 1
-    fi
+	if [[ $# -ne 2 ]]; then
+		echo "$(tput setaf 1)ERROR: installScriptRequirement() requires a script name and URL.$(tput sgr0)"
+		exit 1
+	fi
 
-    local script=$1
-    local url=$2
+	local script=$1
+	local url=$2
 
-    echo "Checking for dependency $script..."
-    if [ ! -e $INSTALL_DIR/$script ]; then
-        echo "Installing dependency $script..."
-        getPackage $url dir
-        cp $dir/$script $INSTALL_DIR/
-        rm -rf $dir
-    else
-        echo "Already installed."
-    fi
+	echo "Checking for dependency $script..."
+	if [ ! -e $INSTALL_DIR/$script ]; then
+		echo "Installing dependency $script..."
+		getPackage $url dir
+		cp $dir/$script $INSTALL_DIR/
+		rm -rf $dir
+	else
+		echo "Already installed."
+	fi
 
 }
 
@@ -125,26 +125,26 @@ echo
 # This is in case you don't have wget, and we need to use brew
 # to install.
 if [ ! -e $INSTALL_DIR/brew ]; then
-    echo "Homebrew is required for installing a few components."
-    echo "Installing brew..."
-    echo "(This may take a minute.)"
-    ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go)" > /dev/null 2>&1
+	echo "Homebrew is required for installing a few components."
+	echo "Installing brew..."
+	echo "(This may take a minute.)"
+	ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" > /dev/null 2>&1
 else
-    echo "Updating brew (just to be safe)..."
-    brew update > /dev/null 2>&1
-    echo "Updated."
-    echo "$(tput setaf 2)Success$(tput sgr0)"
-    echo
+	echo "Updating brew (just to be safe)..."
+	brew update > /dev/null 2>&1
+	echo "Updated."
+	echo "$(tput setaf 2)Success$(tput sgr0)"
+	echo
 fi
 
 # Make sure we have wget
 if [ ! -e $INSTALL_DIR/wget ]; then
-    echo "wget is required."
-    echo "Installing wget..."
-    echo "(This may take a minute.)"
-    brew install wget > /dev/null 2>&1
-    echo "$(tput setaf 2)Success$(tput sgr0)"
-    echo
+	echo "wget is required."
+	echo "Installing wget..."
+	echo "(This may take a minute.)"
+	brew install wget > /dev/null 2>&1
+	echo "$(tput setaf 2)Success$(tput sgr0)"
+	echo
 fi
 
 # tputcolors
@@ -156,8 +156,8 @@ echo
 # Make sure we have Xcode and Xcode command line tools.
 echo "Checking for dependency Xcode..."
 if [ ! -e /Applications/Xcode.app ]; then
-    error "Xcode is required for installing a few components." "Try again after installing from ${t_bold}https://itunes.apple.com/us/app/xcode/id497799835"
-    exit 1
+	error "Xcode is required for installing a few components." "Try again after installing from ${t_bold}https://itunes.apple.com/us/app/xcode/id497799835"
+	exit 1
 fi
 echo "Already installed."
 success
@@ -182,41 +182,41 @@ echo
 echo "Checking for dependency fontforge..."
 if [ ! -e $INSTALL_DIR/fontforge ]; then
 
-    echo "Installing dependency fontforge..."
-    echo "(This will take a couple minutes. Go get some coffee.)"
+	echo "Installing dependency fontforge..."
+	echo "(This will take a couple minutes. Go get some coffee.)"
 
-    # brew will occasionally freak out if this dir isn't chmodded.
-    chmod 777 /usr/local/share > /dev/null 2>&1
+	# brew will occasionally freak out if this dir isn't chmodded.
+	chmod 777 /usr/local/share > /dev/null 2>&1
 
-    # libtiff can make brew freak out occasionally.
-    # Unlink and relink.
-    brew unlink libtiff > /dev/null 2>&1
-    brew link libtiff > /dev/null 2>&1
+	# libtiff can make brew freak out occasionally.
+	# Unlink and relink.
+	brew unlink libtiff > /dev/null 2>&1
+	brew link libtiff > /dev/null 2>&1
 
-    # Mac OS X gettext is compiled with a non-compatible with
-    # fontforge compiler. We'll remove and let fontforge install
-    # it for us.
-    brew remove gettext > /dev/null 2>&1
+	# Mac OS X gettext is compiled with a non-compatible with
+	# fontforge compiler. We'll remove and let fontforge install
+	# it for us.
+	brew remove gettext > /dev/null 2>&1
 
-    # fontconfig needs to be linked where it isn't.
-    brew link fontconfig > /dev/null 2>&1
+	# fontconfig needs to be linked where it isn't.
+	brew link fontconfig > /dev/null 2>&1
 
-    # finally:
-    touch brew.log
-    brew install fontforge > brew.log 2>&1
+	# finally:
+	touch brew.log
+	brew install fontforge > brew.log 2>&1
 
-    if [[ $? -ne 0 ]]; then
-        error "'brew link fontforge' failed." "This probably means that something in /usr/local/ doesn't have the correct permissions"
-        echo "${t_yellow}DEBUG TRACE:${t_reset}"
-        echo "${t_yellow}$(cat brew.log)${t_reset}"
-        exit 1
-    fi
+	if [[ $? -ne 0 ]]; then
+		error "'brew link fontforge' failed." "This probably means that something in /usr/local/ doesn't have the correct permissions"
+		echo "${t_yellow}DEBUG TRACE:${t_reset}"
+		echo "${t_yellow}$(cat brew.log)${t_reset}"
+		exit 1
+	fi
 
-    # cleanup
-    rm brew.log
+	# cleanup
+	rm brew.log
 
 else
-    echo "Already installed."
+	echo "Already installed."
 fi
 success
 echo
@@ -224,44 +224,44 @@ echo
 # galena
 echo "Installing galena..."
 if [ ! -e $INSTALL_DIR/galena ]; then
-    cp galena $INSTALL_DIR/
+	cp galena $INSTALL_DIR/
 else
-    echo "Already installed."
-    # Prompt for what to do
-    printf "${t_yellow}Options: [u]pdate or [s]kip? ${t_reset}"
-    read -n 1 action
-    case $action in
-        u)
-            printf "\nReplacing existing copy of antimony with this one...\n"
-            rm $INSTALL_DIR/galena
-            cp galena $INSTALL_DIR/
-            ;;
-        *)
-            printf "\nSkipping.\n"
-            ;;
-    esac
+	echo "Already installed."
+	# Prompt for what to do
+	printf "${t_yellow}Options: [u]pdate or [s]kip? ${t_reset}"
+	read -n 1 action
+	case $action in
+		u)
+			printf "\nReplacing existing copy of antimony with this one...\n"
+			rm $INSTALL_DIR/galena
+			cp galena $INSTALL_DIR/
+			;;
+		*)
+			printf "\nSkipping.\n"
+			;;
+	esac
 fi
 
 # antimony
 echo "Installing antimony..."
 if [ ! -e $INSTALL_DIR/antimony ]; then
-    cp antimony $INSTALL_DIR/
+	cp antimony $INSTALL_DIR/
 else
-    echo "Already installed."
+	echo "Already installed."
 
-    # Prompt for what to do
-    printf "${t_yellow}Options: [u]pdate or [s]kip? ${t_reset}"
-    read -n 1 action
-    case $action in
-        u)
-            printf "\nReplacing existing copy of antimony with this one...\n"
-            rm $INSTALL_DIR/antimony
-            cp antimony $INSTALL_DIR/
-            ;;
-        *)
-            printf "\nSkipping.\n"
-            ;;
-    esac
+	# Prompt for what to do
+	printf "${t_yellow}Options: [u]pdate or [s]kip? ${t_reset}"
+	read -n 1 action
+	case $action in
+		u)
+			printf "\nReplacing existing copy of antimony with this one...\n"
+			rm $INSTALL_DIR/antimony
+			cp antimony $INSTALL_DIR/
+			;;
+		*)
+			printf "\nSkipping.\n"
+			;;
+	esac
 
 fi
 success "Install finished."
